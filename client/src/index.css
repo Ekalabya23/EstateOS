@@ -2,7 +2,6 @@
 
 /* ============================================
    EstateOS Advanced Design System
-   The $50M Premium Experience
    ============================================ */
 
 @theme inline {
@@ -25,7 +24,7 @@
   --font-display: "Playfair Display", Georgia, serif;
   --font-body: "Inter", sans-serif;
 
-  /* ── Strict 8px Rhythm Spacing ── */
+  /* ── Strict 8px Rhythm ── */
   --spacing-1: 8px;
   --spacing-2: 16px;
   --spacing-3: 24px;
@@ -47,7 +46,7 @@
   --radius-3xl: 32px;
   --radius-full: 9999px;
 
-  /* ── Advanced Shadows ── */
+  /* ── Shadows ── */
   --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.03);
   --shadow-editorial: 0 12px 40px rgba(0, 0, 0, 0.06);
   --shadow-cinematic:
@@ -55,7 +54,7 @@
   --shadow-glass-dark:
     0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.05);
 
-  /* ── Cinematic Easing ── */
+  /* ── Easing ── */
   --ease-fluid: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-elastic: cubic-bezier(0.68, -0.6, 0.32, 1.6);
   --duration-fast: 200ms;
@@ -64,7 +63,7 @@
 }
 
 /* ============================================
-   Base Styles
+   Base
    ============================================ */
 *,
 *::before,
@@ -87,8 +86,16 @@ body {
   color: var(--color-charcoal);
   line-height: 1.5;
   overflow-x: hidden;
-  /* Subtle global noise overlay */
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.02'/%3E%3C/svg%3E");
+  background-image:
+    radial-gradient(
+      circle at 12% 14%,
+      rgba(201, 169, 110, 0.12),
+      transparent 18%
+    ),
+    radial-gradient(circle at 88% 84%, rgba(30, 29, 28, 0.08), transparent 28%),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.02'/%3E%3C/svg%3E");
+  background-attachment: fixed;
+  background-size: cover;
 }
 
 ::selection {
@@ -111,7 +118,7 @@ body {
 }
 
 /* ============================================
-   Massive Editorial Typography
+   Typography
    ============================================ */
 h1,
 h2,
@@ -124,16 +131,16 @@ h4 {
   color: var(--color-charcoal);
 }
 
-/* Cinematic sizes */
 .heading-cinematic {
-  font-size: clamp(3.5rem, 8vw, 7.5rem);
+  font-size: clamp(3rem, 7.5vw, 7rem);
   line-height: 0.95;
   letter-spacing: -0.04em;
 }
 
 .heading-section {
-  font-size: clamp(2.5rem, 5vw, 4.5rem);
+  font-size: clamp(2.25rem, 4.5vw, 4rem);
   letter-spacing: -0.03em;
+  line-height: 1.05;
 }
 
 .heading-card {
@@ -142,23 +149,23 @@ h4 {
 }
 
 .text-body-elegant {
-  font-size: 1.125rem;
-  line-height: 1.6;
+  font-size: 1.0625rem;
+  line-height: 1.65;
   color: var(--color-stone);
   letter-spacing: -0.01em;
 }
 
 /* ============================================
-   Visual Depth & Overlays
+   Visual Depth
    ============================================ */
 
-/* Architectural Grid */
 .architectural-grid {
   background-size: 40px 40px;
   background-image:
-    linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+    linear-gradient(to right, rgba(0, 0, 0, 0.025) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.025) 1px, transparent 1px);
 }
+
 .architectural-grid-dark {
   background-size: 40px 40px;
   background-image:
@@ -166,12 +173,11 @@ h4 {
     linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
 }
 
-/* Premium Glassmorphism */
 .glass-premium {
-  background: rgba(253, 252, 249, 0.6);
+  background: rgba(253, 252, 249, 0.65);
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.55);
   box-shadow: var(--shadow-editorial);
 }
 
@@ -193,7 +199,6 @@ h4 {
   border: 1px solid rgba(255, 255, 255, 0.8);
 }
 
-/* Mesh Gradients */
 .mesh-champagne {
   background:
     radial-gradient(
@@ -209,7 +214,6 @@ h4 {
   opacity: 0.15;
 }
 
-/* Dynamic Glow */
 .glow-on-hover {
   position: relative;
 }
@@ -233,80 +237,144 @@ h4 {
 }
 
 /* ============================================
-   Layout & Composition
+   Layout
    ============================================ */
 
 .container-cinematic {
   width: 100%;
   max-width: 1440px;
   margin: 0 auto;
-  padding: 0 var(--spacing-10); /* 80px desktop */
+  padding: 0 80px;
 }
 
-/* Used by Footer to keep global page rhythm consistent */
 .container-wide {
   width: 100%;
   max-width: 1440px;
   margin: 0 auto;
-  padding: 0 var(--spacing-10); /* 80px desktop */
+  padding: 0 80px;
 }
 
 @media (max-width: 1024px) {
-  .container-cinematic {
-    padding: 0 var(--spacing-6);
-  } /* 48px tablet */
+  .container-cinematic,
   .container-wide {
-    padding: 0 var(--spacing-6);
-  }
-}
-@media (max-width: 768px) {
-  .container-cinematic {
-    padding: 0 var(--spacing-3);
-  } /* 24px mobile */
-  .container-wide {
-    padding: 0 var(--spacing-3);
+    padding: 0 48px;
   }
 }
 
-/* 12-Column Grid System */
+@media (max-width: 768px) {
+  .container-cinematic,
+  .container-wide {
+    padding: 0 24px;
+  }
+}
+
+/* Page spacing helpers */
+.page-shell {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 80px;
+}
+
+@media (max-width: 1024px) {
+  .page-shell {
+    padding: 0 48px;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-shell {
+    padding: 0 24px;
+  }
+}
+
+.section-slim {
+  padding: 72px 0;
+}
+
+.section-focus {
+  padding: 120px 0;
+}
+
+.panel-elevated {
+  background: white;
+  border: 1px solid rgba(235, 234, 230, 0.85);
+  border-radius: 28px;
+  box-shadow: var(--shadow-subtle);
+}
+
+.form-panel {
+  background: white;
+  border: 1px solid rgba(235, 234, 230, 0.85);
+  border-radius: 24px;
+  box-shadow: 0 18px 48px rgba(17, 17, 17, 0.05);
+}
+
+.content-panel {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(235, 234, 230, 0.8);
+  border-radius: 24px;
+  box-shadow: var(--shadow-editorial);
+}
+
+.content-grid {
+  display: grid;
+  gap: 32px;
+}
+
+/* 12-column grid */
 .grid-12 {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: var(--spacing-3); /* 24px */
+  gap: 24px;
 }
 
+/* ── Section vertical rhythm ──
+   Landing sections: 120px top/bottom desktop, 80px mobile.
+   Consistent across every section — no per-section overrides.
+*/
 .section-dense {
-  padding-top: var(--spacing-16); /* 120px */
-  padding-bottom: var(--spacing-16);
+  padding-top: 120px;
+  padding-bottom: 120px;
 }
+
 @media (max-width: 768px) {
   .section-dense {
-    padding: var(--spacing-10) 0;
+    padding-top: 80px;
+    padding-bottom: 80px;
   }
 }
 
 /* ============================================
-   Buttons & Interactive
+   Buttons
    ============================================ */
+
+button,
+input,
+textarea,
+select {
+  font-family: var(--font-body);
+}
 
 .btn-cinematic {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--spacing-2);
-  padding: 16px 36px;
+  gap: 10px;
+  padding: 15px 34px;
   background: var(--color-charcoal);
   color: white;
   font-family: var(--font-body);
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 500;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   border-radius: var(--radius-full);
   position: relative;
   overflow: hidden;
   transition: transform var(--duration-fast) var(--ease-fluid);
 }
+
 .btn-cinematic::after {
   content: "";
   position: absolute;
@@ -314,20 +382,21 @@ h4 {
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(255, 255, 255, 0.2),
+    rgba(255, 255, 255, 0.18),
     transparent
   );
   transform: translateX(-100%);
   transition: transform 0.6s ease;
 }
+
 .btn-cinematic:hover {
   transform: scale(1.02);
 }
+
 .btn-cinematic:hover::after {
   transform: translateX(100%);
 }
 
-/* Text reveal mask */
 .text-reveal-mask {
   clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%);
 }

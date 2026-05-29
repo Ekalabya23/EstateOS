@@ -1,0 +1,45 @@
+# Root ignore for ESTATEOS (monorepo)
+
+# Dependency directories
+node_modules/
+
+# Build outputs
+dist/
+build/
+coverage/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# VS Code
+.vscode/
+!.vscode/extensions.json
+
+# Editors / OS
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Server/client generated artifacts (common)
+client/dist/
+server/dist/
+
+# Runtime files
+*.pid
+*.seed
+*.pid.lock
+

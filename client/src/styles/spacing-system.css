@@ -1,0 +1,276 @@
+/* ============================================
+   Unified Spacing & Layout System
+   EstateOS Design Consistency
+   ============================================ */
+
+/* Container Standards */
+.layout-container {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-10);
+}
+
+.layout-container-compact {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-6);
+}
+
+@media (max-width: 1024px) {
+  .layout-container {
+    padding: 0 var(--spacing-6);
+  }
+  .layout-container-compact {
+    padding: 0 var(--spacing-4);
+  }
+}
+
+@media (max-width: 768px) {
+  .layout-container {
+    padding: 0 var(--spacing-3);
+  }
+  .layout-container-compact {
+    padding: 0 var(--spacing-3);
+  }
+}
+
+/* Section Spacing */
+.section-hero {
+  padding: var(--spacing-20) 0 var(--spacing-16);
+}
+
+.section-standard {
+  padding: var(--spacing-16) 0;
+}
+
+.section-compact {
+  padding: var(--spacing-10) 0;
+}
+
+@media (max-width: 768px) {
+  .section-hero {
+    padding: var(--spacing-12) 0 var(--spacing-8);
+  }
+  .section-standard {
+    padding: var(--spacing-8) 0;
+  }
+  .section-compact {
+    padding: var(--spacing-6) 0;
+  }
+}
+
+/* Card & Component Spacing */
+.card-padding {
+  padding: var(--spacing-6);
+}
+
+.card-padding-lg {
+  padding: var(--spacing-8);
+}
+
+.card-padding-sm {
+  padding: var(--spacing-4);
+}
+
+@media (max-width: 768px) {
+  .card-padding {
+    padding: var(--spacing-4);
+  }
+  .card-padding-lg {
+    padding: var(--spacing-6);
+  }
+  .card-padding-sm {
+    padding: var(--spacing-3);
+  }
+}
+
+/* Gap Standards */
+.gap-standard {
+  gap: var(--spacing-3);
+}
+
+.gap-compact {
+  gap: var(--spacing-2);
+}
+
+.gap-spacious {
+  gap: var(--spacing-4);
+}
+
+.gap-wide {
+  gap: var(--spacing-6);
+}
+
+/* Flex Utilities with Spacing */
+.flex-row-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-3);
+}
+
+.flex-row-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-3);
+}
+
+.flex-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.flex-col-compact {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.flex-col-spacious {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+/* Grid Utilities */
+.grid-2-col {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--spacing-4);
+}
+
+.grid-3-col {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--spacing-4);
+}
+
+.grid-4-col {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-3);
+}
+
+@media (max-width: 768px) {
+  .grid-2-col,
+  .grid-3-col,
+  .grid-4-col {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-3);
+  }
+}
+
+/* Margin Utilities */
+.mt-hero {
+  margin-top: var(--spacing-20);
+}
+
+.mt-lg {
+  margin-top: var(--spacing-8);
+}
+
+.mt-md {
+  margin-top: var(--spacing-4);
+}
+
+.mt-sm {
+  margin-top: var(--spacing-2);
+}
+
+.mb-hero {
+  margin-bottom: var(--spacing-20);
+}
+
+.mb-lg {
+  margin-bottom: var(--spacing-8);
+}
+
+.mb-md {
+  margin-bottom: var(--spacing-4);
+}
+
+.mb-sm {
+  margin-bottom: var(--spacing-2);
+}
+
+.mx-auto {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Vertical Stack Spacing */
+.stack-lg > * + * {
+  margin-top: var(--spacing-6);
+}
+
+.stack-md > * + * {
+  margin-top: var(--spacing-4);
+}
+
+.stack-sm > * + * {
+  margin-top: var(--spacing-2);
+}
+
+/* Position Resets */
+.position-reset {
+  position: relative;
+  left: auto;
+  right: auto;
+  top: auto;
+  bottom: auto;
+}
+
+/* Text Spacing */
+.text-spacing-tight {
+  letter-spacing: -0.02em;
+}
+
+.text-spacing-normal {
+  letter-spacing: -0.01em;
+}
+
+.text-spacing-wide {
+  letter-spacing: 0.05em;
+}
+
+.line-height-tight {
+  line-height: 1.2;
+}
+
+.line-height-normal {
+  line-height: 1.5;
+}
+
+.line-height-relaxed {
+  line-height: 1.8;
+}
+
+/* Consistency Helpers */
+.no-margin {
+  margin: 0;
+}
+
+.no-padding {
+  padding: 0;
+}
+
+.no-gap {
+  gap: 0;
+}
+
+/* Responsive Visibility for Spacing */
+@media (max-width: 1024px) {
+  .hide-desktop {
+    display: none;
+  }
+}
+
+@media (min-width: 1025px) {
+  .hide-mobile {
+    display: none;
+  }
+}

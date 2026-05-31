@@ -15,8 +15,6 @@ export default function Login() {
   const location = useLocation();
   const setUser = useAuthStore((state) => state.setUser);
 
-  const from = location.state?.from?.pathname || "/dashboard";
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -24,7 +22,15 @@ export default function Login() {
 
     try {
       const { data } = await api.post("/auth/login", { email, password });
-      setUser(data.data);
+      const userData = data.data;
+      setUser(userData);
+      
+      let defaultDashboard = "/dashboard";
+      if (userData.role === 'tenant') defaultDashboard = "/dashboard/tenant";
+      else if (userData.role === 'investor') defaultDashboard = "/dashboard/investor";
+      else if (userData.role === 'admin') defaultDashboard = "/dashboard/admin";
+
+      const from = location.state?.from?.pathname || defaultDashboard;
       navigate(from, { replace: true });
     } catch (err: any) {
       setError(err.response?.data?.message || "Failed to login");

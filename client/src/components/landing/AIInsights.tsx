@@ -1,142 +1,83 @@
-import { useRef } from "react";
-import { motion, useInView } from "framer-motion";
-import { Sparkles, Brain, ScanText, Target, Sofa } from "lucide-react";
+import { motion } from "framer-motion";
+import { Brain, FileSearch, Languages, Sparkles, UsersRound } from "lucide-react";
 
-const cards = [
+const features = [
   {
     icon: Brain,
-    title: "Predictive Valuation Engine",
-    desc: "Analyzes millions of data points across global markets to predict property yields with 94% accuracy over 5 years.",
-    span: "col-span-12 md:col-span-8",
-    dark: false,
-    accent: true,
+    title: "Valuation intelligence",
+    copy: "Blend comps, scarcity, rental history, and buyer demand into a price narrative your team can defend.",
   },
   {
-    icon: ScanText,
-    title: "Smart Contracts",
-    desc: "Instant legal summaries and risk highlighting for 100-page lease agreements in seconds.",
-    span: "col-span-12 md:col-span-4",
-    dark: true,
-    accent: false,
+    icon: FileSearch,
+    title: "Document review",
+    copy: "Surface obligations, renewals, encumbrances, and missing diligence items before they slow the deal.",
   },
   {
-    icon: Target,
-    title: "Client Matching",
-    desc: "Behavioral targeting pairs off-market luxury units with verified high-net-worth buyers.",
-    span: "col-span-12 md:col-span-4",
-    dark: false,
-    accent: false,
+    icon: UsersRound,
+    title: "Buyer matching",
+    copy: "Pair private inventory with qualified buyers based on mandate, liquidity, geography, and intent.",
   },
   {
-    icon: Sofa,
-    title: "Generative Staging",
-    desc: "Instantly restyle empty spaces with luxury designer furniture in one click.",
-    span: "col-span-12 md:col-span-4",
-    dark: false,
-    accent: false,
-  },
-  {
-    icon: Sparkles,
-    title: "Dynamic Copy",
-    desc: "Editorial-grade property descriptions generated in 12 languages simultaneously.",
-    span: "col-span-12 md:col-span-4",
-    dark: false,
-    accent: false,
+    icon: Languages,
+    title: "Global presentation",
+    copy: "Generate polished listing copy, owner summaries, and buyer packets for international conversations.",
   },
 ];
 
 export default function AIInsights() {
-  const sectionRef = useRef(null);
-  const isInView = useInView(sectionRef, { once: true, margin: "-80px" });
-
   return (
-    <section
-      id="ai"
-      ref={sectionRef}
-      className="section-dense bg-[var(--color-ivory)] relative"
-    >
-      <div className="container-cinematic relative z-10">
-        {/* ── Section header ── */}
-        <div className="text-center mb-16 max-w-xl mx-auto">
-          <span className="text-[var(--color-champagne-dark)] uppercase tracking-[0.2em] text-[11px] font-semibold mb-4 block">
-            Artificial Intelligence
-          </span>
-          <h2 className="heading-section mb-5 leading-[1.05]">
-            Cognitive{" "}
-            <span className="italic font-light text-[var(--color-stone)]">
-              Real Estate.
-            </span>
-          </h2>
-          <p className="text-body-elegant text-base">
-            The industry's first cognitive engine — predicting market shifts,
-            automating contract analysis, and personalising client experiences
-            at scale.
-          </p>
+    <section id="platform" className="section-dense bg-[var(--color-warm-white)]">
+      <div className="container-cinematic">
+        <div className="grid grid-cols-12 gap-8">
+          <div className="col-span-12 lg:col-span-5">
+            <span className="section-kicker">Intelligence Layer</span>
+            <h2 className="heading-section mt-5">
+              Built for the judgment calls behind premium real estate.
+            </h2>
+          </div>
+          <div className="col-span-12 lg:col-span-6 lg:col-start-7">
+            <div className="rounded-[1.75rem] bg-[var(--color-charcoal)] p-6 text-white shadow-[var(--shadow-editorial)] md:p-8">
+              <div className="mb-10 flex items-start justify-between gap-6">
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--color-champagne)]">
+                    AI Recommendation
+                  </p>
+                  <h3 className="mt-4 max-w-xl font-[var(--font-display)] text-3xl font-extrabold leading-tight">
+                    Hold public launch. Send to 14 qualified private buyers first.
+                  </h3>
+                </div>
+                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white text-[var(--color-charcoal)]">
+                  <Sparkles className="h-5 w-5" />
+                </span>
+              </div>
+              <div className="grid gap-3 md:grid-cols-3">
+                {["Demand spike", "Low public supply", "Owner privacy"].map((item) => (
+                  <div key={item} className="rounded-2xl border border-white/10 bg-white/7 p-4">
+                    <p className="text-sm font-bold">{item}</p>
+                    <div className="mt-4 h-1.5 rounded-full bg-white/10">
+                      <div className="h-full w-3/4 rounded-full bg-[var(--color-champagne)]" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* ── Bento grid — auto rows, no fixed heights ── */}
-        <div className="grid-12 gap-4">
-          {cards.map((card, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 24 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{
-                duration: 0.9,
-                delay: i * 0.08,
-                ease: [0.16, 1, 0.3, 1],
-              }}
-              className={`${card.span} relative overflow-hidden rounded-[1.75rem] p-8 glow-on-hover flex flex-col justify-between gap-10 min-h-[260px] ${
-                card.dark ? "bg-[var(--color-charcoal)]" : "glass-premium"
-              }`}
+        <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4">
+          {features.map((feature, index) => (
+            <motion.article
+              key={feature.title}
+              initial={{ opacity: 0, y: 22 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-80px" }}
+              transition={{ duration: 0.55, delay: index * 0.06 }}
+              className="rounded-[1.35rem] border border-[var(--color-mist)] bg-white/76 p-6 shadow-[var(--shadow-subtle)]"
             >
-              {/* Mesh accent for large card */}
-              {card.accent && (
-                <div className="absolute top-0 right-0 w-72 h-72 mesh-champagne rounded-full blur-3xl -translate-y-1/3 translate-x-1/4 pointer-events-none" />
-              )}
-
-              {/* Animated scan line for large card */}
-              {card.accent && (
-                <div className="absolute right-8 bottom-8 w-[28%] h-[45%] border-l border-t border-[var(--color-charcoal)]/10 pointer-events-none overflow-hidden">
-                  <motion.div
-                    animate={{ x: ["0%", "100%", "0%"] }}
-                    transition={{
-                      duration: 4,
-                      repeat: Infinity,
-                      ease: "linear",
-                    }}
-                    className="w-px h-full bg-gradient-to-b from-transparent via-[var(--color-champagne)] to-transparent opacity-40"
-                  />
-                </div>
-              )}
-
-              {/* Icon */}
-              <card.icon
-                className={`w-7 h-7 ${
-                  card.dark
-                    ? "text-white/70"
-                    : "text-[var(--color-champagne-dark)]"
-                }`}
-              />
-
-              {/* Text */}
-              <div>
-                <h3
-                  className={`font-[var(--font-display)] text-xl mb-3 leading-tight ${
-                    card.dark ? "text-white" : "text-[var(--color-charcoal)]"
-                  }`}
-                >
-                  {card.title}
-                </h3>
-                <p
-                  className={`text-sm leading-relaxed max-w-[360px] ${
-                    card.dark ? "text-white/55" : "text-[var(--color-stone)]"
-                  }`}
-                >
-                  {card.desc}
-                </p>
-              </div>
-            </motion.div>
+              <feature.icon className="h-6 w-6 text-[var(--color-champagne-dark)]" />
+              <h3 className="mt-8 font-[var(--font-display)] text-xl font-extrabold">{feature.title}</h3>
+              <p className="mt-3 text-sm leading-7 text-[var(--color-stone)]">{feature.copy}</p>
+            </motion.article>
           ))}
         </div>
       </div>

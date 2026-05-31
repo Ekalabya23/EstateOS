@@ -11,6 +11,7 @@ import {
   Command,
 } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
+import OmniSearch from '../shared/OmniSearch';
 
 const breadcrumbMap: Record<string, string> = {
   '/dashboard': 'Overview',
@@ -28,7 +29,14 @@ export default function DashboardHeader() {
   const navigate = useNavigate();
   const location = useLocation();
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [hasNewNotification, setHasNewNotification] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleNotification = () => setHasNewNotification(true);
+    window.addEventListener('estateos-notification', handleNotification);
+    return () => window.removeEventListener('estateos-notification', handleNotification);
+  }, []);
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -75,18 +83,17 @@ export default function DashboardHeader() {
       {/* Right Actions */}
       <div className="flex items-center gap-2">
         {/* Search */}
-        <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--color-warm-white)] border border-[var(--color-mist)] text-[var(--color-stone)] hover:border-[var(--color-stone-light)] transition-colors text-[13px]">
-          <Search className="w-3.5 h-3.5" />
-          <span className="hidden md:inline">Search</span>
-          <kbd className="hidden md:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-white border border-[var(--color-mist)] text-[9px] font-mono text-[var(--color-stone-light)] ml-2">
-            <Command className="w-2 h-2" />K
-          </kbd>
-        </button>
+        <OmniSearch />
 
         {/* Notifications */}
-        <button className="relative p-2 rounded-lg hover:bg-[var(--color-warm-white)] transition-colors text-[var(--color-stone)] hover:text-[var(--color-charcoal)]">
+        <button 
+          onClick={() => setHasNewNotification(false)}
+          className="relative p-2 rounded-lg hover:bg-[var(--color-warm-white)] transition-colors text-[var(--color-stone)] hover:text-[var(--color-charcoal)]"
+        >
           <Bell className="w-4 h-4" />
-          <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-[var(--color-champagne)] rounded-full" />
+          {hasNewNotification && (
+            <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-[var(--color-champagne)] rounded-full animate-pulse" />
+          )}
         </button>
 
         {/* Divider */}

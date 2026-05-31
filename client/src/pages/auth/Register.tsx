@@ -28,8 +28,15 @@ export default function Register() {
         password,
         role,
       });
-      setUser(data.data);
-      navigate("/dashboard", { replace: true });
+      const userData = data.data;
+      setUser(userData);
+      
+      let defaultDashboard = "/dashboard";
+      if (userData.role === 'tenant') defaultDashboard = "/dashboard/tenant";
+      else if (userData.role === 'investor' || userData.role === 'user') defaultDashboard = "/dashboard/investor";
+      else if (userData.role === 'admin') defaultDashboard = "/dashboard/admin";
+      
+      navigate(defaultDashboard, { replace: true });
     } catch (err: any) {
       setError(err.response?.data?.message || "Failed to register");
     } finally {

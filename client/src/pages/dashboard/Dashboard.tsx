@@ -24,58 +24,6 @@ import { useAuthStore } from "../../store/useAuthStore";
 import StatCard from "../../components/dashboard/StatCard";
 import api from "../../lib/axios";
 
-const revenueData = [
-  { month: "Jan", revenue: 42000 },
-  { month: "Feb", revenue: 38000 },
-  { month: "Mar", revenue: 51000 },
-  { month: "Apr", revenue: 47000 },
-  { month: "May", revenue: 55000 },
-  { month: "Jun", revenue: 62000 },
-  { month: "Jul", revenue: 58000 },
-  { month: "Aug", revenue: 71000 },
-  { month: "Sep", revenue: 67000 },
-  { month: "Oct", revenue: 79000 },
-  { month: "Nov", revenue: 74000 },
-  { month: "Dec", revenue: 86000 },
-];
-
-const recentActivity = [
-  {
-    action: "Lease Signed",
-    property: "The Azure Penthouse",
-    amount: "+₹24,00,000",
-    time: "Just now",
-    type: "success",
-  },
-  {
-    action: "Maintenance Request",
-    property: "Villa Serena",
-    amount: "-₹8,500",
-    time: "2m ago",
-    type: "warning",
-  },
-  {
-    action: "Rent Received",
-    property: "Emerald Gardens",
-    amount: "+₹1,25,000",
-    time: "15m ago",
-    type: "success",
-  },
-  {
-    action: "Property Listed",
-    property: "Ivory Residences",
-    amount: "₹6.1 Cr",
-    time: "1h ago",
-    type: "info",
-  },
-  {
-    action: "Deposit Cleared",
-    property: "Sapphire Tower",
-    amount: "+₹50,000",
-    time: "3h ago",
-    type: "success",
-  },
-];
 
 interface PropertyStats {
   totalProperties: number;
@@ -89,20 +37,30 @@ export default function DashboardOverview() {
   const { user } = useAuthStore();
   const navigate = useNavigate();
   const [stats, setStats] = useState<PropertyStats | null>(null);
+  const [revenueData, setRevenueData] = useState<any[]>([]);
+  const [recentActivity, setRecentActivity] = useState<any[]>([]);
   const [, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchStats = async () => {
+    const fetchData = async () => {
       try {
-        const { data } = await api.get("/properties/stats");
-        setStats(data.data);
+        const [propStats, transStats, transList] = await Promise.all([
+          api.get("/properties/stats"),
+          api.get("/transactions/stats"),
+          api.get("/transactions", { params: { limit: 5 } }),
+        ]);
+        setStats(propStats.data.data);
+        if (transStats.data.data.revenueData) {
+          setRevenueData(transStats.data.data.revenueData);
+        }
+        setRecentActivity(transList.data.data);
       } catch {
         // fine
       } finally {
         setLoading(false);
       }
     };
-    fetchStats();
+    fetchData();
   }, []);
 
   const occupiedCount =
@@ -310,26 +268,24 @@ export default function DashboardOverview() {
               >
                 <div className="min-w-0 mr-3">
                   <p className="text-[13px] font-medium text-[var(--color-charcoal)] truncate leading-snug">
-                    {item.action}
+                    {item.description || item.category}
                   </p>
                   <p className="text-[11px] text-[var(--color-stone)] mt-0.5 leading-snug truncate">
-                    {item.property}
+                    {item.property?.title || "Portfolio"}
                   </p>
                 </div>
                 <div className="text-right shrink-0">
                   <p
                     className={`text-[12px] font-mono font-semibold leading-snug ${
-                      item.type === "success"
+                      item.type === "income"
                         ? "text-emerald-600"
-                        : item.type === "warning"
-                          ? "text-amber-600"
-                          : "text-[var(--color-charcoal)]"
+                        : "text-amber-600"
                     }`}
                   >
-                    {item.amount}
+                    {item.type === "income" ? "+" : "-"}₹{item.amount?.toLocaleString()}
                   </p>
                   <p className="text-[10px] text-[var(--color-stone-light)] uppercase tracking-wide mt-0.5 leading-snug">
-                    {item.time}
+                    {new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                   </p>
                 </div>
               </motion.div>

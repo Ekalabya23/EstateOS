@@ -28,6 +28,7 @@ interface Property {
   bathrooms: number;
   area: number;
   images: string[];
+  healthScore?: number;
   createdAt: string;
 }
 
@@ -67,15 +68,11 @@ export default function Properties() {
   const fetchProperties = async () => {
     setLoading(true);
     try {
-      const params: Record<string, string | number> = {
-        page: pagination.page,
-        limit: pagination.limit,
-        sort: sortField,
-      };
-      if (filterType !== "All") params.propertyType = filterType;
-      if (filterStatus !== "All") params.status = filterStatus;
-
-      const { data } = await api.get("/properties", { params });
+      const params: Record<string, any> = { page: pagination.page, limit: pagination.limit, sort: sortField, myPortfolio: true };
+      if (filterStatus !== 'All') params.status = filterStatus.toLowerCase();
+      if (filterType !== 'All') params.propertyType = filterType.toLowerCase();
+      
+      const { data } = await api.get('/properties', { params });
       setProperties(data.data);
       setPagination(data.pagination);
     } catch (err) {
@@ -247,7 +244,7 @@ export default function Properties() {
         ) : (
           <>
             {/* Table Header */}
-            <div className="grid grid-cols-[1fr_100px_90px_90px_70px_40px] gap-3 px-5 py-2.5 border-b border-[var(--color-mist)] bg-[var(--color-warm-white)]/70">
+            <div className="grid grid-cols-[1fr_100px_90px_60px_90px_70px_40px] gap-3 px-5 py-2.5 border-b border-[var(--color-mist)] bg-[var(--color-warm-white)]/70">
               <button
                 onClick={() =>
                   setSortField((f) => (f === "title" ? "-title" : "title"))
@@ -261,6 +258,9 @@ export default function Properties() {
               </span>
               <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--color-stone)]">
                 Status
+              </span>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--color-stone)]">
+                Health
               </span>
               <button
                 onClick={() =>
@@ -283,7 +283,7 @@ export default function Properties() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: i * 0.025 }}
-                className="grid grid-cols-[1fr_100px_90px_90px_70px_40px] gap-3 px-5 py-3 border-b border-[var(--color-mist)]/60 last:border-0 hover:bg-[var(--color-warm-white)]/40 transition-colors items-center group"
+                className="grid grid-cols-[1fr_100px_90px_60px_90px_70px_40px] gap-3 px-5 py-3 border-b border-[var(--color-mist)]/60 last:border-0 hover:bg-[var(--color-warm-white)]/40 transition-colors items-center group"
               >
                 {/* Property */}
                 <div className="flex items-center gap-3 min-w-0">
@@ -310,6 +310,11 @@ export default function Properties() {
                 </span>
 
                 <StatusBadge status={prop.status} />
+
+                <div className="flex items-center gap-1.5">
+                  <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: (prop.healthScore || 100) > 80 ? '#22c55e' : (prop.healthScore || 100) > 50 ? '#eab308' : '#ef4444' }} />
+                  <span className="text-[12px] font-medium text-[var(--color-charcoal)]">{prop.healthScore || 100}</span>
+                </div>
 
                 <span
                   className="text-[13px] font-medium text-[var(--color-charcoal)]"

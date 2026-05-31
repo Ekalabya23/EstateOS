@@ -11,6 +11,9 @@ import {
   ChevronRight,
   LogOut,
   Sparkles,
+  MessageSquare,
+  Wrench,
+  Receipt,
 } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
 
@@ -19,13 +22,30 @@ interface SidebarProps {
   onToggle: () => void;
 }
 
-const navItems = [
+const landlordNavItems = [
   { label: 'Overview', icon: LayoutDashboard, path: '/dashboard' },
   { label: 'Properties', icon: Building2, path: '/dashboard/properties' },
   { label: 'Tenants', icon: Users, path: '/dashboard/tenants' },
-  { label: 'Financials', icon: DollarSign, path: '/dashboard/financials' },
+  { label: 'Financials', icon: Receipt, path: '/dashboard/financials' },
+  { label: 'Maintenance', icon: Wrench, path: '/dashboard/maintenance' },
+  { label: 'Messages', icon: MessageSquare, path: '/dashboard/messages' },
   { label: 'Analytics', icon: BarChart3, path: '/dashboard/analytics' },
   { label: 'AI Insights', icon: Sparkles, path: '/dashboard/ai' },
+  { label: 'Browse Properties', icon: Building2, path: '/properties' },
+];
+
+const tenantNavItems = [
+  { label: 'My Lease', icon: LayoutDashboard, path: '/dashboard/tenant' },
+  { label: 'Payments', icon: Receipt, path: '/dashboard/payments' },
+  { label: 'Maintenance', icon: Wrench, path: '/dashboard/maintenance' },
+  { label: 'Messages', icon: MessageSquare, path: '/dashboard/messages' },
+  { label: 'Browse Properties', icon: Building2, path: '/properties' },
+];
+
+const investorNavItems = [
+  { label: 'Portfolio', icon: LayoutDashboard, path: '/dashboard/investor' },
+  { label: 'Browse Properties', icon: Building2, path: '/properties' },
+  { label: 'Messages', icon: MessageSquare, path: '/dashboard/messages' },
 ];
 
 const bottomItems = [
@@ -40,6 +60,12 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
     await logout();
     navigate('/');
   };
+
+  const currentNavItems = user?.role === 'tenant' 
+    ? tenantNavItems 
+    : (user?.role === 'investor' || user?.role === 'user') 
+      ? investorNavItems 
+      : landlordNavItems;
 
   const sidebarWidth = collapsed ? 72 : 260;
 
@@ -86,7 +112,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
           )}
         </AnimatePresence>
 
-        {navItems.map((item) => (
+        {currentNavItems.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}

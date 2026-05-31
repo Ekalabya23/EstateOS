@@ -1,14 +1,18 @@
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import { motion } from "framer-motion";
+import { Toaster } from 'react-hot-toast';
 import Sidebar from "./Sidebar";
 import DashboardHeader from "./DashboardHeader";
+import { useSocket } from "../../lib/socket";
 
 export default function DashboardLayout() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  useSocket(); // Initialize socket connection
 
   return (
     <div className="min-h-screen bg-[var(--color-warm-white)]">
+      <Toaster position="top-right" />
       {/* Sidebar */}
       <Sidebar
         collapsed={sidebarCollapsed}

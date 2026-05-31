@@ -1,222 +1,128 @@
-import { useRef } from 'react';
-import { motion, useInView } from 'framer-motion';
-import { Activity, TrendingUp, DollarSign, Building2 } from 'lucide-react';
+import { motion } from "framer-motion";
+import { Activity, ArrowUpRight, Building2, CircleDollarSign, TrendingUp } from "lucide-react";
 
 const kpis = [
-  { label: 'Portfolio Value', val: '$42.8M', trend: '+2.4%', icon: DollarSign },
-  { label: 'Active Leases', val: '156', trend: '+12', icon: Building2 },
-  { label: 'Avg. Yield', val: '8.2%', trend: '+0.4%', icon: TrendingUp },
+  { label: "Portfolio value", value: "$248.6M", delta: "+18.2%", icon: CircleDollarSign },
+  { label: "Occupancy", value: "91%", delta: "+4.8%", icon: Building2 },
+  { label: "Yield", value: "7.4%", delta: "+1.1%", icon: TrendingUp },
 ];
 
-const transactions = [
-  { act: 'Rent Processed', loc: 'The Azure Penthouse', amt: '+$24,000', time: 'Just now' },
-  { act: 'Maintenance Logged', loc: 'Villa Serena', amt: '-$850', time: '2m ago' },
-  { act: 'Lease Renewed', loc: 'Ivory Residences', amt: '12 mo', time: '15m ago' },
-  { act: 'Deposit Received', loc: 'Emerald Gardens', amt: '+$12,500', time: '1h ago' },
+const feed = [
+  ["Malabar Hill", "Buyer packet opened", "2m ago"],
+  ["Palm Jumeirah", "Offer model updated", "14m ago"],
+  ["Alibaug Estate", "Inspection scheduled", "1h ago"],
+  ["Lutyens House", "NDA completed", "3h ago"],
 ];
 
 export default function AnalyticsPreview() {
-  const sectionRef = useRef(null);
-  const isInView = useInView(sectionRef, { once: true, margin: '-80px' });
-
   return (
-    <section
-      id="analytics"
-      ref={sectionRef}
-      className="section-dense bg-[var(--color-charcoal-dark)] relative overflow-hidden"
-    >
-      {/* Background */}
-      <div className="absolute inset-0 mesh-champagne opacity-15 pointer-events-none" />
-      <div className="absolute inset-0 architectural-grid-dark opacity-8 pointer-events-none" />
+    <section id="analytics" className="section-dense relative overflow-hidden bg-[var(--color-charcoal-dark)] text-white">
+      <div className="absolute inset-0 architectural-grid-dark opacity-25" />
+      <div className="absolute inset-0 mesh-champagne opacity-30" />
 
       <div className="container-cinematic relative z-10">
-
-        {/* ── Section header ── */}
-        <div className="text-center mb-16 max-w-2xl mx-auto">
-          <span className="text-[var(--color-stone-light)] uppercase tracking-[0.2em] text-[11px] font-semibold mb-4 block">
-            Bloomberg Terminal Meets Apple
-          </span>
-          <h2 className="heading-section text-white mb-5 leading-[1.05]">
-            Executive{' '}
-            <span className="italic font-light text-[var(--color-champagne)]">Intelligence</span>
-          </h2>
-          <p className="text-body-elegant text-white/55 text-base">
-            Real-time data visualization for high-net-worth portfolio management — live yields,
-            predictive occupancy, and instant financial reporting.
-          </p>
+        <div className="mb-12 grid grid-cols-12 gap-8">
+          <div className="col-span-12 lg:col-span-6">
+            <span className="section-kicker text-[var(--color-champagne)]">Portfolio Intelligence</span>
+            <h2 className="heading-section mt-5">
+              The numbers, narratives, and next moves in one room.
+            </h2>
+          </div>
+          <div className="col-span-12 flex items-end lg:col-span-5 lg:col-start-8">
+            <p className="text-lg leading-8 text-white/62">
+              Replace scattered spreadsheets with a live operating view that tracks revenue, demand signals, due diligence, and owner decisions.
+            </p>
+          </div>
         </div>
 
-        {/* ── Dashboard mockup ── */}
         <motion.div
-          initial={{ opacity: 0, y: 36, scale: 0.985 }}
-          animate={isInView ? { opacity: 1, y: 0, scale: 1 } : {}}
-          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-          className="relative glass-premium-dark rounded-[2rem] border border-white/8 shadow-[var(--shadow-cinematic)] overflow-hidden"
+          initial={{ opacity: 0, y: 28 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
+          className="overflow-hidden rounded-[1.75rem] border border-white/12 bg-white/[0.06] shadow-[var(--shadow-cinematic)] backdrop-blur-xl"
         >
-          {/* Window chrome */}
-          <div className="flex items-center justify-between px-8 py-5 border-b border-white/8">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
-              <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/80" />
-              <span className="w-2.5 h-2.5 rounded-full bg-green-500/80" />
-            </div>
-            <div className="flex items-center gap-6">
-              <span className="text-white/35 text-[11px] font-mono uppercase tracking-widest">
-                System: Online
-              </span>
-              <span className="text-[var(--color-champagne)] text-[11px] font-mono flex items-center gap-1.5">
-                <Activity className="w-3 h-3" />
-                Live Feed
-              </span>
-            </div>
-            <div className="w-[80px]" /> {/* spacer for center balance */}
-          </div>
-
-          {/* Dashboard body */}
-          <div className="p-8 lg:p-10">
-            <div className="grid-12 gap-6">
-
-              {/* Left — Chart area */}
-              <div className="col-span-12 lg:col-span-8 flex flex-col gap-6">
-
-                {/* KPI row */}
-                <div className="grid grid-cols-3 gap-4">
-                  {kpis.map((stat, i) => (
-                    <div
-                      key={i}
-                      className="bg-white/5 border border-white/6 rounded-2xl p-5 hover:border-[var(--color-champagne)]/25 transition-colors duration-500"
-                    >
-                      <div className="flex items-center justify-between mb-4">
-                        <stat.icon className="w-4 h-4 text-[var(--color-champagne)]" />
-                        <span className="text-[var(--color-success)] text-[11px] font-mono font-semibold">
-                          {stat.trend}
-                        </span>
-                      </div>
-                      <div className="text-[10px] uppercase tracking-[0.16em] text-white/40 mb-2">
-                        {stat.label}
-                      </div>
-                      <div className="text-2xl text-white font-[var(--font-display)] font-light leading-none">
-                        {stat.val}
-                      </div>
+          <div className="grid grid-cols-12">
+            <div className="col-span-12 border-b border-white/10 p-5 md:p-7 lg:col-span-8 lg:border-b-0 lg:border-r">
+              <div className="grid gap-4 md:grid-cols-3">
+                {kpis.map((item) => (
+                  <div key={item.label} className="rounded-2xl border border-white/10 bg-white/[0.07] p-5">
+                    <div className="mb-6 flex items-center justify-between">
+                      <item.icon className="h-5 w-5 text-[var(--color-champagne)]" />
+                      <span className="rounded-full bg-[var(--color-success)]/14 px-2.5 py-1 text-xs font-bold text-[var(--color-success)]">
+                        {item.delta}
+                      </span>
                     </div>
-                  ))}
-                </div>
-
-                {/* Chart */}
-                <div className="bg-white/5 border border-white/6 rounded-2xl overflow-hidden">
-                  <div className="flex items-center justify-between px-6 pt-6 pb-4">
-                    <span className="text-white/70 text-sm font-medium">Revenue Trajectory</span>
-                    <div className="flex items-center gap-1">
-                      {['1D', '1W', '1M', '1Y'].map((t) => (
-                        <span
-                          key={t}
-                          className={`text-[11px] px-2.5 py-1 rounded-md cursor-pointer transition-colors ${
-                            t === '1Y'
-                              ? 'bg-white/15 text-white font-medium'
-                              : 'text-white/35 hover:text-white/60'
-                          }`}
-                        >
-                          {t}
-                        </span>
-                      ))}
-                    </div>
+                    <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-white/42">{item.label}</p>
+                    <p className="mt-2 text-3xl font-black">{item.value}</p>
                   </div>
-
-                  {/* SVG sparkline */}
-                  <div className="relative h-48 w-full">
-                    <svg
-                      viewBox="0 0 100 40"
-                      preserveAspectRatio="none"
-                      className="absolute inset-0 w-full h-full"
-                    >
-                      <defs>
-                        <linearGradient id="chartGlow" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#C9A96E" stopOpacity="0.35" />
-                          <stop offset="100%" stopColor="#C9A96E" stopOpacity="0" />
-                        </linearGradient>
-                      </defs>
-                      <motion.path
-                        initial={{ pathLength: 0, opacity: 0 }}
-                        animate={isInView ? { pathLength: 1, opacity: 1 } : {}}
-                        transition={{ duration: 2, delay: 0.6, ease: 'easeInOut' }}
-                        d="M0 36 L10 33 L20 35 L30 26 L40 29 L50 16 L60 19 L70 11 L80 13 L90 6 L100 3"
-                        fill="none"
-                        stroke="#C9A96E"
-                        strokeWidth="0.6"
-                        strokeLinecap="round"
-                      />
-                      <motion.path
-                        initial={{ opacity: 0 }}
-                        animate={isInView ? { opacity: 1 } : {}}
-                        transition={{ duration: 0.8, delay: 1.8 }}
-                        d="M0 36 L10 33 L20 35 L30 26 L40 29 L50 16 L60 19 L70 11 L80 13 L90 6 L100 3 L100 40 L0 40 Z"
-                        fill="url(#chartGlow)"
-                      />
-                    </svg>
-
-                    {/* Y-axis labels */}
-                    <div className="absolute left-4 top-0 bottom-0 flex flex-col justify-between py-2 pointer-events-none">
-                      {['$80K', '$60K', '$40K', '$20K'].map((l) => (
-                        <span key={l} className="text-[9px] font-mono text-white/25">{l}</span>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* X-axis months */}
-                  <div className="flex justify-between px-6 pb-5 pt-2">
-                    {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((m) => (
-                      <span key={m} className="text-[9px] font-mono text-white/25">{m}</span>
-                    ))}
-                  </div>
-                </div>
+                ))}
               </div>
 
-              {/* Right — Activity feed */}
-              <div className="col-span-12 lg:col-span-4">
-                <div className="bg-white/5 border border-white/6 rounded-2xl p-6 h-full">
-                  <div className="flex items-center justify-between mb-6">
-                    <span className="text-white/70 text-sm font-medium">Live Transactions</span>
-                    <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-success)] opacity-75" />
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--color-success)]" />
-                    </span>
+              <div className="mt-5 rounded-2xl border border-white/10 bg-[var(--color-charcoal)]/46 p-5">
+                <div className="mb-8 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-bold text-white">Revenue forecast</p>
+                    <p className="mt-1 text-sm text-white/42">Trailing 12 months with projected deal flow</p>
                   </div>
+                  <a href="/login" className="hidden items-center gap-2 rounded-xl bg-white px-3 py-2 text-sm font-bold text-[var(--color-charcoal)] md:inline-flex">
+                    Open dashboard
+                    <ArrowUpRight className="h-4 w-4" />
+                  </a>
+                </div>
 
-                  <div className="space-y-0 divide-y divide-white/5">
-                    {transactions.map((log, i) => (
-                      <motion.div
-                        key={i}
-                        initial={{ opacity: 0, x: 16 }}
-                        animate={isInView ? { opacity: 1, x: 0 } : {}}
-                        transition={{ delay: 0.8 + i * 0.1, duration: 0.6 }}
-                        className="flex items-start justify-between py-4 first:pt-0 last:pb-0"
-                      >
-                        <div className="min-w-0 mr-4">
-                          <p className="text-white text-[13px] font-medium leading-tight mb-1">
-                            {log.act}
-                          </p>
-                          <p className="text-white/35 text-[11px] font-mono truncate">
-                            {log.loc}
-                          </p>
-                        </div>
-                        <div className="text-right shrink-0">
-                          <p className="text-[var(--color-champagne)] text-[13px] font-mono leading-tight">
-                            {log.amt}
-                          </p>
-                          <p className="text-white/25 text-[10px] uppercase tracking-widest mt-1">
-                            {log.time}
-                          </p>
-                        </div>
-                      </motion.div>
+                <div className="relative h-64 overflow-hidden rounded-xl bg-white/[0.04]">
+                  <svg viewBox="0 0 900 260" className="h-full w-full" preserveAspectRatio="none">
+                    <defs>
+                      <linearGradient id="estateArea" x1="0" x2="0" y1="0" y2="1">
+                        <stop offset="0%" stopColor="#c4a46b" stopOpacity="0.38" />
+                        <stop offset="100%" stopColor="#c4a46b" stopOpacity="0" />
+                      </linearGradient>
+                    </defs>
+                    {[40, 90, 140, 190, 240].map((y) => (
+                      <line key={y} x1="0" x2="900" y1={y} y2={y} stroke="rgba(255,255,255,.08)" />
                     ))}
-                  </div>
+                    <path
+                      d="M0 218 C90 190 120 205 190 170 C260 134 315 170 380 118 C445 70 510 112 575 78 C640 44 700 74 760 42 C812 14 855 32 900 18 L900 260 L0 260 Z"
+                      fill="url(#estateArea)"
+                    />
+                    <path
+                      d="M0 218 C90 190 120 205 190 170 C260 134 315 170 380 118 C445 70 510 112 575 78 C640 44 700 74 760 42 C812 14 855 32 900 18"
+                      fill="none"
+                      stroke="#c4a46b"
+                      strokeWidth="4"
+                      strokeLinecap="round"
+                    />
+                  </svg>
                 </div>
               </div>
+            </div>
 
+            <div className="col-span-12 p-5 md:p-7 lg:col-span-4">
+              <div className="mb-5 flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-bold">Live deal room</p>
+                  <p className="mt-1 text-sm text-white/42">Private activity stream</p>
+                </div>
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--color-success)]/14 text-[var(--color-success)]">
+                  <Activity className="h-4 w-4" />
+                </span>
+              </div>
+
+              <div className="space-y-3">
+                {feed.map(([asset, action, time]) => (
+                  <div key={`${asset}-${action}`} className="rounded-2xl border border-white/8 bg-white/[0.055] p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="font-bold text-white">{asset}</p>
+                      <p className="text-xs font-semibold text-white/36">{time}</p>
+                    </div>
+                    <p className="mt-1 text-sm text-white/54">{action}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </motion.div>
-
       </div>
     </section>
   );

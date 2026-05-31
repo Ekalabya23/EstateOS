@@ -7,10 +7,14 @@
  */
 
 import { createServer } from 'http';
-import app from './src/app.js';
+import dotenv from 'dotenv';
 import { connectDB } from './src/config/db.js';
+import app from './src/app.js';
+import { initSocket } from './src/socket.js';
 import { env } from './src/config/env.js';
 import logger from './src/utils/logger.js';
+
+dotenv.config();
 
 // ─── Handle Uncaught Exceptions ────────────────────────────────────────────
 // These are synchronous errors that were never caught.
@@ -24,6 +28,9 @@ process.on('uncaughtException', (err) => {
 
 // ─── Create HTTP Server ────────────────────────────────────────────────────
 const server = createServer(app);
+
+// ─── Initialize WebSockets ──────────────────────────────────────────────────
+initSocket(server);
 
 // ─── Start Server ──────────────────────────────────────────────────────────
 const startServer = async () => {

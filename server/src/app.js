@@ -11,15 +11,24 @@ import cors from 'cors';
 import morgan from 'morgan';
 import mongoSanitize from 'express-mongo-sanitize';
 import cookieParser from 'cookie-parser';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 import corsOptions from './config/cors.js';
 import { generalLimiter } from './middleware/rateLimiter.js';
 import errorHandler from './middleware/errorHandler.js';
 import AppError from './utils/AppError.js';
 import v1Routes from './routes/v1/index.js';
+import { auditLogger } from './middleware/auditMiddleware.js';
 
 // ─── Initialize Express App ───────────────────────────────────────────────
 const app = express();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// ─── Static Files ─────────────────────────────────────────────────────────
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // ─── Security Headers ─────────────────────────────────────────────────────
 // Helmet sets various HTTP headers to help protect the app
@@ -54,6 +63,9 @@ app.use(mongoSanitize());
 // ─── Rate Limiting ─────────────────────────────────────────────────────────
 // Apply general rate limiting to all API routes
 app.use('/api', generalLimiter);
+
+// ─── Audit Logging ─────────────────────────────────────────────────────────
+app.use(auditLogger);
 
 // ─── API Routes ────────────────────────────────────────────────────────────
 app.use('/api/v1', v1Routes);

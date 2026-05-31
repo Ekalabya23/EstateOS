@@ -1,4 +1,8 @@
 import Property from '../models/Property.js';
+import OwnershipHistory from '../models/OwnershipHistory.js';
+import Tenant from '../models/Tenant.js';
+import Transaction from '../models/Transaction.js';
+import MaintenanceTicket from '../models/MaintenanceTicket.js';
 import AppError from '../utils/AppError.js';
 
 // @desc    Get all properties
@@ -7,6 +11,11 @@ import AppError from '../utils/AppError.js';
 export const getAllProperties = async (req, res, next) => {
   try {
     const query = {};
+
+    // Filter by owner if myPortfolio is true
+    if (req.query.myPortfolio === 'true' && req.user) {
+      query.owner = req.user._id;
+    }
 
     // Filtering
     if (req.query.propertyType) {
@@ -72,9 +81,29 @@ export const getProperty = async (req, res, next) => {
       return next(new AppError('Property not found', 404));
     }
 
+    // Models are imported at the top
+
+    const ownershipHistory = await OwnershipHistory.find({ property: property._id })
+      .populate('previousOwner', 'name')
+      .populate('newOwner', 'name')
+      .sort('-purchaseDate');
+
+    const tenantHistory = await Tenant.find({ property: property._id })
+      .populate('user', 'name reputationScore')
+      .sort('-leaseStart');
+
+    const transactions = await Transaction.find({ property: property._id })
+      .sort('-date')
+      .limit(10);
+
     res.status(200).json({
       success: true,
-      data: property,
+      data: {
+        ...property.toObject(),
+        ownershipHistory,
+        tenantHistory,
+        transactions
+      },
     });
   } catch (error) {
     next(error);
@@ -227,6 +256,272 @@ export const getPropertyStats = async (req, res, next) => {
         byStatus: stats.byStatus,
         byType: stats.byType,
       },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get portfolio stats for a specific user
+// @route   GET /api/v1/properties/portfolio/stats
+// @access  Private
+export const getPortfolioStats = async (req, res, next) => {
+  try {
+    const ownerId = req.user._id;
+
+    // 1. Calculate properties and total value
+    const [propertyStats] = await Property.aggregate([
+      { $match: { owner: ownerId } },
+      {
+        $group: {
+          _id: null,
+          totalProperties: { $sum: 1 },
+          totalValue: { $sum: '$price' },
+        },
+      },
+    ]);
+
+    const totalProperties = propertyStats ? propertyStats.totalProperties : 0;
+    const totalValue = propertyStats ? propertyStats.totalValue : 0;
+
+    // 2. Calculate monthly yield from active tenants
+    
+    const [tenantStats] = await Tenant.aggregate([
+      { $match: { owner: ownerId, status: 'active' } },
+      {
+        $group: {
+          _id: null,
+          monthlyYield: { $sum: '$rentAmount' },
+        },
+      },
+    ]);
+
+    const monthlyYield = tenantStats ? tenantStats.monthlyYield : 0;
+
+    // 3. Calculate Annual Yield %
+    let annualYieldPercent = 0;
+    if (totalValue > 0) {
+      annualYieldPercent = ((monthlyYield * 12) / totalValue) * 100;
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalProperties,
+        totalValue,
+        monthlyYield,
+        annualYieldPercent: Number(annualYieldPercent.toFixed(2)),
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Buy property (transfer ownership)
+// @route   POST /api/v1/properties/:id/buy
+// @access  Private (user/investor)
+export const buyProperty = async (req, res, next) => {
+  try {
+    const property = await Property.findById(req.params.id);
+    if (!property) {
+      return next(new AppError('Property not found', 404));
+    }
+
+    if (property.status === 'sold') {
+      return next(new AppError('Property is already sold', 400));
+    }
+
+    if (property.owner.toString() === req.user._id.toString()) {
+      return next(new AppError('You already own this property', 400));
+    }
+
+    const oldOwnerId = property.owner;
+    
+    // Transfer ownership but keep status available for renting out
+    property.owner = req.user._id;
+    // We could mark it sold if it's meant to be taken off market, but investors want to rent it out.
+    // For V2, let's keep it 'available' so tenants can still rent it, but the owner has changed!
+    await property.save();
+
+    // Models imported at the top
+
+    // Create Ownership History Log
+    await OwnershipHistory.create({
+      property: property._id,
+      previousOwner: oldOwnerId,
+      newOwner: req.user._id,
+      purchasePrice: property.price,
+      purchaseDate: new Date(),
+    });
+
+    // Create Expense for Buyer (Investment)
+    await Transaction.create({
+      owner: req.user._id,
+      property: property._id,
+      amount: property.price,
+      type: 'expense',
+      category: 'other',
+      description: 'Property Acquisition',
+      date: new Date()
+    });
+
+    // Create Income for Seller (Sale)
+    await Transaction.create({
+      owner: oldOwnerId,
+      property: property._id,
+      amount: property.price,
+      type: 'income',
+      category: 'other',
+      description: 'Property Sale',
+      date: new Date()
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Property acquired successfully',
+      data: property
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Rent property (create lease)
+// @route   POST /api/v1/properties/:id/rent
+// @access  Private (tenant)
+export const rentProperty = async (req, res, next) => {
+  try {
+    const property = await Property.findById(req.params.id);
+    if (!property) {
+      return next(new AppError('Property not found', 404));
+    }
+
+    if (property.status === 'rented') {
+      return next(new AppError('Property is already rented', 400));
+    }
+
+    // Models imported at the top
+
+    // Check if tenant already has an active lease
+    const existingLease = await Tenant.findOne({ user: req.user._id, status: 'active' });
+    if (existingLease) {
+      return next(new AppError('You already have an active lease. Only one active lease per tenant is supported.', 400));
+    }
+
+    // 1. Update Property Status
+    property.status = 'rented';
+    await property.save();
+
+    // 2. Create Lease
+    const startDate = new Date();
+    const endDate = new Date();
+    endDate.setFullYear(endDate.getFullYear() + 1);
+    
+    // Assume 0.3% of price is monthly rent for this simulation
+    const rentAmount = Math.floor(property.price * 0.003);
+
+    const tenant = await Tenant.create({
+      user: req.user._id,
+      property: property._id,
+      owner: property.owner,
+      firstName: req.user.name.split(' ')[0],
+      lastName: req.user.name.split(' ')[1] || 'Tenant',
+      email: req.user.email,
+      phone: '+91 9999999999',
+      leaseStart: startDate,
+      leaseEnd: endDate,
+      rentAmount: rentAmount,
+      securityDeposit: rentAmount * 3,
+      status: 'active'
+    });
+
+    // 3. Create Transactions (First month rent)
+    await Transaction.create({
+      owner: property.owner,
+      tenant: tenant._id,
+      property: property._id,
+      amount: rentAmount,
+      type: 'income',
+      category: 'rent',
+      description: 'First month rent payment (System checkout)',
+      date: new Date()
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Lease activated successfully',
+      data: tenant
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Calculate Property Health Score
+// @route   GET /api/v1/properties/:id/health
+// @access  Private
+export const calculatePropertyHealth = async (req, res, next) => {
+  try {
+    const property = await Property.findById(req.params.id);
+    if (!property) {
+      return next(new AppError('Property not found', 404));
+    }
+
+    // Models imported at the top
+
+    // 1. Maintenance Frequency
+    const tickets = await MaintenanceTicket.find({ property: property._id });
+    const totalTickets = tickets.length;
+    const openTickets = tickets.filter(t => t.status !== 'Resolved' && t.status !== 'Closed').length;
+    
+    // Penalize if too many total tickets, heavily penalize if open tickets
+    let maintenanceScore = 100 - (totalTickets * 2) - (openTickets * 10);
+    if (maintenanceScore < 0) maintenanceScore = 0;
+
+    // 2. Tenant Care (Reputation Score of past/current tenants)
+    const leases = await Tenant.find({ property: property._id }).populate('user');
+    let tenantCareScore = 100;
+    if (leases.length > 0) {
+      let totalReputation = 0;
+      let count = 0;
+      leases.forEach(lease => {
+        if (lease.user && lease.user.reputationScore) {
+          totalReputation += lease.user.reputationScore;
+          count++;
+        }
+      });
+      if (count > 0) {
+        tenantCareScore = totalReputation / count; // Avg reputation score
+      }
+    }
+
+    // 3. Occupancy Stability
+    // Calculate how many months rented vs available
+    // For now, simple mock based on number of leases
+    let occupancyScore = 100 - (leases.length * 5); // Lots of turnover = lower stability
+    if (property.status === 'available') occupancyScore -= 20;
+    if (occupancyScore < 0) occupancyScore = 0;
+    if (occupancyScore > 100) occupancyScore = 100;
+
+    // Overall Score
+    const overallScore = Math.floor((maintenanceScore * 0.4) + (tenantCareScore * 0.4) + (occupancyScore * 0.2));
+
+    property.healthScore = overallScore;
+    property.healthFactors = {
+      maintenanceFrequency: Math.floor(maintenanceScore),
+      tenantCare: Math.floor(tenantCareScore),
+      occupancyStability: Math.floor(occupancyScore)
+    };
+
+    await property.save();
+
+    res.status(200).json({
+      success: true,
+      data: {
+        score: overallScore,
+        factors: property.healthFactors
+      }
     });
   } catch (error) {
     next(error);

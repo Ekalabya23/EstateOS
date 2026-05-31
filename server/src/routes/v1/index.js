@@ -25,8 +25,22 @@ router.get('/health', (req, res) => {
 // ─── Feature Routes ────────────────────────────────────────────────────────
 import authRoutes from '../authRoutes.js';
 import propertyRoutes from '../propertyRoutes.js';
+import tenantRoutes from '../tenantRoutes.js';
+import transactionRoutes from '../transactionRoutes.js';
+import aiRoutes from '../aiRoutes.js';
+import uploadRoutes from '../uploadRoutes.js';
+import paymentRoutes from '../paymentRoutes.js';
+import maintenanceRoutes from '../maintenanceRoutes.js';
+import searchRoutes from '../searchRoutes.js';
 
 router.use('/auth', authRoutes);
 router.use('/properties', propertyRoutes);
+router.use('/tenants', tenantRoutes);
+router.use('/transactions', transactionRoutes);
+router.use('/ai', aiRoutes);
+router.use('/upload', uploadRoutes);
+router.use('/payments', paymentRoutes);
+router.use('/maintenance', maintenanceRoutes);
+router.use('/search', searchRoutes);
 
 export default router;

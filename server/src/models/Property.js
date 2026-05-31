@@ -56,9 +56,24 @@ const propertySchema = new mongoose.Schema(
     amenities: {
       type: [String],
     },
+    documents: {
+      type: [String], // Array of URLs to PDFs/Docs
+    },
+    floorPlans: {
+      type: [String], // Array of URLs to floor plan images
+    },
     featured: {
       type: Boolean,
       default: false,
+    },
+    healthScore: {
+      type: Number,
+      default: 100, // Starts at 100, dynamically calculated later or updated by cron
+    },
+    healthFactors: {
+      maintenanceFrequency: { type: Number, default: 100 }, // 100 = perfect (few tickets), 0 = terrible
+      occupancyStability: { type: Number, default: 100 },
+      tenantCare: { type: Number, default: 100 },
     },
     owner: {
       type: mongoose.Schema.Types.ObjectId,

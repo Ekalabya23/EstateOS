@@ -10,6 +10,8 @@ import {
   Plus,
   X,
   Loader2,
+  Sparkles,
+  Upload
 } from "lucide-react";
 import api from "../../lib/axios";
 
@@ -41,6 +43,8 @@ const amenityOptions = [
 export default function AddProperty() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [generatingDesc, setGeneratingDesc] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [error, setError] = useState("");
 
   const [form, setForm] = useState({
@@ -75,13 +79,29 @@ export default function AddProperty() {
     }));
   };
 
-  const addImage = () => {
-    if (imageUrl.trim() && !form.images.includes(imageUrl.trim())) {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const file = e.target.files[0];
+    const formData = new FormData();
+    formData.append("image", file);
+
+    setUploadingImage(true);
+    try {
+      const res = await api.post("/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+      const cloudUrl = res.data.data;
       setForm((prev) => ({
         ...prev,
-        images: [...prev.images, imageUrl.trim()],
+        images: [...prev.images, cloudUrl],
       }));
-      setImageUrl("");
+    } catch (err: any) {
+      console.error("Failed to upload image", err);
+      setError("Failed to upload image. Please try again.");
+    } finally {
+      setUploadingImage(false);
+      // Reset input
+      e.target.value = '';
     }
   };
 
@@ -115,6 +135,27 @@ export default function AddProperty() {
       );
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGenerateDescription = async () => {
+    setGeneratingDesc(true);
+    try {
+      const payload = {
+        title: form.title,
+        type: form.propertyType,
+        location: `${form.city}, ${form.state}`,
+        bedrooms: form.bedrooms,
+        bathrooms: form.bathrooms,
+        area: form.area,
+        amenities: form.amenities,
+      };
+      const res = await api.post('/ai/generate-description', payload);
+      setForm((prev) => ({ ...prev, description: res.data.data }));
+    } catch (err: any) {
+      console.error('Failed to generate description', err);
+    } finally {
+      setGeneratingDesc(false);
     }
   };
 
@@ -191,7 +232,18 @@ export default function AddProperty() {
               />
             </div>
             <div>
-              <label className={labelClass}>Description</label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--color-stone)]">Description</label>
+                <button
+                  type="button"
+                  onClick={handleGenerateDescription}
+                  disabled={generatingDesc}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[var(--color-cream)] text-[var(--color-champagne-dark)] text-[10px] font-bold uppercase tracking-wider hover:bg-[var(--color-champagne)]/20 transition-colors disabled:opacity-50"
+                >
+                  {generatingDesc ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+                  {generatingDesc ? "Writing..." : "AI Generate"}
+                </button>
+              </div>
               <textarea
                 className={`${inputClass} min-h-[100px] resize-none`}
                 placeholder="Describe the property..."
@@ -365,24 +417,18 @@ export default function AddProperty() {
             </h2>
           </div>
 
-          <div className="flex gap-2 mb-3">
-            <input
-              type="url"
-              className={`${inputClass} flex-1`}
-              placeholder="Paste image URL..."
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              onKeyDown={(e) =>
-                e.key === "Enter" && (e.preventDefault(), addImage())
-              }
-            />
-            <button
-              type="button"
-              onClick={addImage}
-              className="px-3 py-2 rounded-lg bg-[var(--color-cream)] hover:bg-[var(--color-champagne)]/10 text-[var(--color-champagne-dark)] transition-colors shrink-0"
-            >
-              <Plus className="w-4 h-4" />
-            </button>
+          <div className="flex items-center gap-4 mb-4">
+            <label className="flex items-center justify-center gap-2 w-full py-4 border-2 border-dashed border-[var(--color-mist)] rounded-xl bg-[var(--color-warm-white)] hover:bg-[var(--color-cream)] hover:border-[var(--color-champagne-dark)] transition-colors cursor-pointer text-[13px] font-medium text-[var(--color-charcoal)]">
+              {uploadingImage ? <Loader2 className="w-4 h-4 animate-spin text-[var(--color-champagne-dark)]" /> : <Upload className="w-4 h-4 text-[var(--color-champagne-dark)]" />}
+              {uploadingImage ? "Uploading to Cloudinary..." : "Click to upload an image"}
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageUpload}
+                disabled={uploadingImage}
+              />
+            </label>
           </div>
 
           {form.images.length > 0 && (

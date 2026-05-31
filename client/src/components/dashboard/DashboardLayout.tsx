@@ -8,6 +8,7 @@ import { useSocket } from "../../lib/socket";
 
 export default function DashboardLayout() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   useSocket(); // Initialize socket connection
 
   return (
@@ -17,6 +18,8 @@ export default function DashboardLayout() {
       <Sidebar
         collapsed={sidebarCollapsed}
         onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+        mobileOpen={mobileMenuOpen}
+        onMobileClose={() => setMobileMenuOpen(false)}
       />
 
       {/* Main Content Area */}
@@ -24,9 +27,10 @@ export default function DashboardLayout() {
         initial={false}
         animate={{ marginLeft: sidebarCollapsed ? 72 : 260 }}
         transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-        className="flex flex-col min-h-screen bg-[var(--color-warm-white)]"
+        className="flex flex-col min-h-screen bg-[var(--color-warm-white)] lg:ml-auto w-full lg:w-auto"
+        style={{ marginLeft: window.innerWidth >= 1024 ? undefined : 0 }}
       >
-        <DashboardHeader />
+        <DashboardHeader onMenuClick={() => setMobileMenuOpen(true)} />
         <main className="flex-1 px-6 py-8 lg:px-10 lg:py-10">
           <div className="max-w-[1440px] mx-auto w-full">
             <Outlet />

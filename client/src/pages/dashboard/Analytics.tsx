@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { BarChart3, Loader2 } from 'lucide-react';
+import { BarChart3, Loader2, Download } from 'lucide-react';
 import api from '../../lib/axios';
+import { generatePortfolioSummary } from '../../utils/reportGenerator';
 
 export default function Analytics() {
   const [loading, setLoading] = useState(true);
@@ -57,9 +58,17 @@ export default function Analytics() {
         <div className="w-10 h-10 rounded-xl bg-white border border-[var(--color-mist)] shadow-sm flex items-center justify-center shrink-0">
           <BarChart3 className="w-5 h-5 text-[var(--color-charcoal)]" />
         </div>
-        <div>
-          <h1 className="text-2xl text-[var(--color-charcoal)] leading-none" style={{ fontFamily: 'var(--font-display)' }}>Analytics Center</h1>
-          <p className="text-[12px] text-[var(--color-stone)] mt-1">Deep insights into your portfolio's performance</p>
+        <div className="flex flex-1 flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl text-[var(--color-charcoal)] leading-none" style={{ fontFamily: 'var(--font-display)' }}>Analytics Center</h1>
+            <p className="text-[12px] text-[var(--color-stone)] mt-1">Deep insights into your portfolio's performance</p>
+          </div>
+          <button 
+            onClick={() => generatePortfolioSummary(stats)}
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-[var(--color-charcoal)] text-white text-sm font-medium rounded-lg hover:bg-black transition-colors"
+          >
+            <Download className="w-4 h-4" /> Download Report
+          </button>
         </div>
       </motion.div>
 
@@ -71,7 +80,7 @@ export default function Analytics() {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie data={typeData} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value" stroke="none">
-                  {typeData.map((entry: any, index: number) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
+                  {typeData.map((_entry: any, index: number) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
                 </Pie>
                 <Tooltip
                   contentStyle={{ background: '#1E1D1C', border: 'none', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
@@ -90,7 +99,7 @@ export default function Analytics() {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie data={statusData} cx="50%" cy="50%" outerRadius={80} dataKey="value" stroke="none">
-                  {statusData.map((entry: any, index: number) => <Cell key={`cell-${index}`} fill={COLORS[(index + 1) % COLORS.length]} />)}
+                  {statusData.map((_entry: any, index: number) => <Cell key={`cell-${index}`} fill={COLORS[(index + 1) % COLORS.length]} />)}
                 </Pie>
                 <Tooltip
                   contentStyle={{ background: '#1E1D1C', border: 'none', borderRadius: '8px', color: '#fff', fontSize: '12px' }}

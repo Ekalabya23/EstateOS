@@ -33,11 +33,37 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: 'default.jpg',
     },
+    savedProperties: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Property',
+      },
+    ],
+    onboardingCompleted: {
+      type: Boolean,
+      default: false
+    },
+    verificationStatus: {
+      emailVerified: { type: Boolean, default: false },
+      phoneVerified: { type: Boolean, default: false },
+      idVerified: { type: Boolean, default: false },
+      addressVerified: { type: Boolean, default: false }
+    },
+    profileCompletion: {
+      type: Number,
+      default: 0
+    },
+    idDocuments: [{
+      type: String
+    }]
   },
   {
     timestamps: true,
   }
 );
+
+// Add text indexes for OmniSearch
+userSchema.index({ name: 'text', email: 'text', role: 'text' });
 
 // Hash password before saving
 userSchema.pre('save', async function (next) {

@@ -64,7 +64,6 @@ export default function AddProperty() {
     featured: false,
   });
 
-  const [imageUrl, setImageUrl] = useState("");
 
   const updateField = (field: string, value: any) => {
     setForm((prev) => ({ ...prev, [field]: value }));

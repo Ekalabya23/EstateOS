@@ -11,6 +11,7 @@ import dotenv from 'dotenv';
 import { connectDB } from './src/config/db.js';
 import app from './src/app.js';
 import { initSocket } from './src/socket.js';
+import { startScheduler } from './src/jobs/scheduler.js';
 import { env } from './src/config/env.js';
 import logger from './src/utils/logger.js';
 
@@ -37,6 +38,9 @@ const startServer = async () => {
   try {
     // Connect to MongoDB
     await connectDB();
+
+    // Start background cron jobs
+    startScheduler();
 
     // Start listening
     server.listen(env.PORT, () => {

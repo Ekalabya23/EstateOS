@@ -2,11 +2,20 @@ import { create } from 'zustand';
 import api from '../lib/axios';
 
 interface User {
-  id: string;
+  id?: string;
+  _id?: string;
   name: string;
   email: string;
-  role: 'user' | 'tenant' | 'landlord' | 'admin';
+  role: 'user' | 'tenant' | 'landlord' | 'admin' | 'investor';
   profileImage: string;
+  onboardingCompleted?: boolean;
+  profileCompletion?: number;
+  verificationStatus?: {
+    emailVerified: boolean;
+    phoneVerified: boolean;
+    idVerified: boolean;
+    addressVerified: boolean;
+  };
 }
 
 interface AuthState {

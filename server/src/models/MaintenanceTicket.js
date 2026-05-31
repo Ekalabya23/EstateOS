@@ -63,5 +63,10 @@ const maintenanceTicketSchema = new mongoose.Schema(
   }
 );
 
+maintenanceTicketSchema.index({ landlord: 1, status: 1 });
+maintenanceTicketSchema.index({ tenant: 1 });
+maintenanceTicketSchema.index({ property: 1 });
+maintenanceTicketSchema.index({ title: 'text', category: 'text', status: 'text' });
+
 const MaintenanceTicket = mongoose.model('MaintenanceTicket', maintenanceTicketSchema);
 export default MaintenanceTicket;

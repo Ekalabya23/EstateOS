@@ -4,7 +4,7 @@ import {
   LayoutDashboard,
   Building2,
   Users,
-  DollarSign,
+  
   BarChart3,
   Settings,
   ChevronLeft,
@@ -14,12 +14,16 @@ import {
   MessageSquare,
   Wrench,
   Receipt,
+  FileSearch,
+  Heart,
 } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
 
 interface SidebarProps {
   collapsed: boolean;
   onToggle: () => void;
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
 }
 
 const landlordNavItems = [
@@ -31,19 +35,22 @@ const landlordNavItems = [
   { label: 'Messages', icon: MessageSquare, path: '/dashboard/messages' },
   { label: 'Analytics', icon: BarChart3, path: '/dashboard/analytics' },
   { label: 'AI Insights', icon: Sparkles, path: '/dashboard/ai' },
+  { label: 'Lease Analyzer', icon: FileSearch, path: '/dashboard/ai/lease-analyzer' },
   { label: 'Browse Properties', icon: Building2, path: '/properties' },
 ];
 
 const tenantNavItems = [
   { label: 'My Lease', icon: LayoutDashboard, path: '/dashboard/tenant' },
   { label: 'Payments', icon: Receipt, path: '/dashboard/payments' },
-  { label: 'Maintenance', icon: Wrench, path: '/dashboard/maintenance' },
   { label: 'Messages', icon: MessageSquare, path: '/dashboard/messages' },
+  { label: 'Saved Properties', icon: Heart, path: '/dashboard/saved' },
+  { label: 'Lease Analyzer', icon: FileSearch, path: '/dashboard/ai/lease-analyzer' },
   { label: 'Browse Properties', icon: Building2, path: '/properties' },
 ];
 
 const investorNavItems = [
   { label: 'Portfolio', icon: LayoutDashboard, path: '/dashboard/investor' },
+  { label: 'Saved Properties', icon: Heart, path: '/dashboard/saved' },
   { label: 'Browse Properties', icon: Building2, path: '/properties' },
   { label: 'Messages', icon: MessageSquare, path: '/dashboard/messages' },
 ];
@@ -52,7 +59,7 @@ const bottomItems = [
   { label: 'Settings', icon: Settings, path: '/dashboard/settings' },
 ];
 
-export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
+export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: SidebarProps) {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
 
@@ -70,12 +77,29 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const sidebarWidth = collapsed ? 72 : 260;
 
   return (
-    <motion.aside
-      initial={false}
-      animate={{ width: sidebarWidth }}
-      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-      className="fixed left-0 top-0 bottom-0 z-40 flex flex-col bg-white border-r border-[var(--color-mist)] overflow-hidden select-none"
-    >
+    <>
+      {/* Mobile Backdrop */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onMobileClose}
+            className="fixed inset-0 bg-black/50 z-40 lg:hidden backdrop-blur-sm"
+          />
+        )}
+      </AnimatePresence>
+
+      <motion.aside
+        initial={false}
+        animate={{ 
+          width: sidebarWidth,
+          x: window.innerWidth < 1024 ? (mobileOpen ? 0 : -260) : 0
+        }}
+        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+        className="fixed left-0 top-0 bottom-0 z-50 flex flex-col bg-white border-r border-[var(--color-mist)] overflow-hidden select-none"
+      >
       {/* ── Logo Bar ── */}
       <div className="h-16 flex items-center gap-3 px-4 border-b border-[var(--color-mist)] shrink-0">
         <div className="w-9 h-9 rounded-lg bg-[var(--color-charcoal)] flex items-center justify-center shrink-0">
@@ -261,5 +285,6 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
         </div>
       </div>
     </motion.aside>
+    </>
   );
 }

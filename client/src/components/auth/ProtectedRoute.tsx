@@ -23,6 +23,11 @@ export default function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  // Check onboarding status
+  if (user && !user.onboardingCompleted && !location.pathname.includes('/onboarding')) {
+    return <Navigate to="/dashboard/onboarding" replace />;
+  }
+
   if (allowedRoles && user && !allowedRoles.includes(user.role)) {
     // Role not authorized, redirect to a generic fallback or dashboard
     return <Navigate to="/dashboard" replace />;

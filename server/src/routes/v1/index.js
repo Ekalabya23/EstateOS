@@ -32,6 +32,12 @@ import uploadRoutes from '../uploadRoutes.js';
 import paymentRoutes from '../paymentRoutes.js';
 import maintenanceRoutes from '../maintenanceRoutes.js';
 import searchRoutes from '../searchRoutes.js';
+import notificationRoutes from '../notificationRoutes.js';
+import userRoutes from '../userRoutes.js';
+import vendorRoutes from '../vendorRoutes.js';
+import leaseRoutes from '../leaseRoutes.js';
+import stagingRoutes from '../stagingRoutes.js';
+import fractionalRoutes from '../fractionalRoutes.js';
 
 router.use('/auth', authRoutes);
 router.use('/properties', propertyRoutes);
@@ -42,5 +48,11 @@ router.use('/upload', uploadRoutes);
 router.use('/payments', paymentRoutes);
 router.use('/maintenance', maintenanceRoutes);
 router.use('/search', searchRoutes);
+router.use('/notifications', notificationRoutes);
+router.use('/users', userRoutes);
+router.use('/vendors', vendorRoutes);
+router.use('/leases', leaseRoutes);
+router.use('/staging', stagingRoutes);
+router.use('/fractional', fractionalRoutes);
 
 export default router;

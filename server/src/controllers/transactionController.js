@@ -1,5 +1,6 @@
 import Transaction from '../models/Transaction.js';
 import { getIO } from '../socket.js';
+import { clearCache } from '../middleware/cacheMiddleware.js';
 
 // @desc    Get all transactions
 // @route   GET /api/v1/transactions
@@ -64,6 +65,8 @@ export const createTransaction = async (req, res) => {
       console.error('Socket not initialized or failed to emit:', socketErr);
     }
 
+    clearCache();
+
     res.status(201).json({ success: true, data: transaction });
   } catch (error) {
     res.status(400).json({ success: false, message: 'Bad Request', error: error.message });
@@ -82,6 +85,7 @@ export const deleteTransaction = async (req, res) => {
     }
 
     await transaction.deleteOne();
+    clearCache();
     res.status(200).json({ success: true, data: {} });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server Error', error: error.message });

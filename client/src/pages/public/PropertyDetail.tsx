@@ -3,13 +3,18 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ArrowLeft, MapPin, Bed, Bath, Maximize, Check, Loader2, X } from 'lucide-react';
+import { ArrowLeft, MapPin, Bed, Bath, Maximize, Check, Loader2, X, Calendar, Heart } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../lib/axios';
 import { useAuthStore } from '../../store/useAuthStore';
 import DocumentVault from '../../components/shared/DocumentVault';
 import PhotoGallery from '../../components/shared/PhotoGallery';
 import OwnershipLedger from '../../components/shared/OwnershipLedger';
+import AIPropertyChat from '../../components/shared/AIPropertyChat';
+import NeighborhoodInsights from '../../components/shared/NeighborhoodInsights';
+import PropertyPassport from '../../components/shared/PropertyPassport';
+import BeforeAfterSlider from '../../components/shared/BeforeAfterSlider';
+import ROICalculator from './ROICalculator';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -18,6 +23,9 @@ export default function PropertyDetail() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const [property, setProperty] = useState<any>(null);
+  const [fractionalData, setFractionalData] = useState<any>(null);
+  const [buyingShares, setBuyingShares] = useState(false);
+  const [sharesToBuy, setSharesToBuy] = useState(10);
   const [loading, setLoading] = useState(true);
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
@@ -31,6 +39,14 @@ export default function PropertyDetail() {
       try {
         const { data } = await api.get(`/properties/${id}`);
         setProperty(data.data);
+        
+        // Fetch fractional data if exists
+        try {
+          const fracRes = await api.get(`/fractional/${id}`);
+          setFractionalData(fracRes.data.data);
+        } catch (err) {
+          // It's ok if it's not a fractional property
+        }
       } catch (err) {
         console.error('Failed to fetch property details', err);
       } finally {
@@ -98,6 +114,23 @@ export default function PropertyDetail() {
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Transaction failed');
       setCheckoutLoading(false);
+    }
+  };
+
+  const handleBuyShares = async () => {
+    try {
+      setBuyingShares(true);
+      await api.post(`/fractional/${id}/buy`, { sharesToBuy });
+      toast.success(`Successfully purchased ${sharesToBuy} shares!`);
+      // Update local state
+      setFractionalData({
+        ...fractionalData,
+        availableShares: fractionalData.availableShares - sharesToBuy
+      });
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to buy shares');
+    } finally {
+      setBuyingShares(false);
     }
   };
 
@@ -213,6 +246,36 @@ export default function PropertyDetail() {
               </div>
             )}
 
+            {/* Neighborhood Intelligence */}
+            {property.coordinates && property.coordinates.lat && property.coordinates.lng && (
+              <div className="mt-16 pt-16 border-t border-[var(--color-mist)]">
+                <NeighborhoodInsights lat={property.coordinates.lat} lng={property.coordinates.lng} />
+              </div>
+            )}
+
+            {/* Property Passport */}
+            <PropertyPassport propertyId={property._id} />
+
+            {/* ROI Calculator */}
+            <div className="reveal-text mt-16 pt-16 border-t border-[var(--color-mist)]">
+              <ROICalculator initialPrice={property.price} />
+            </div>
+
+            {/* AI Virtual Staging (Mocked for Demo if empty) */}
+            <div className="reveal-text mt-16 pt-16 border-t border-[var(--color-mist)]">
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <h2 className="text-3xl font-bold text-[var(--color-charcoal)] font-display">AI Virtual Staging</h2>
+                  <p className="text-[var(--color-stone)] mt-2">See the potential of this space with AI-generated interior design.</p>
+                </div>
+                <span className="px-3 py-1 bg-[var(--color-champagne-light)] text-[var(--color-champagne-dark)] text-[10px] font-bold uppercase tracking-widest rounded-full">EstateOS Vision</span>
+              </div>
+              <BeforeAfterSlider 
+                originalImage={property.images[0] || 'https://images.unsplash.com/photo-1600607688969-a5bfcd646154'}
+                stagedImage="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0" // Hardcoded mockup for the effect
+              />
+            </div>
+
           </div>
 
           {/* Sticky Sidebar */}
@@ -256,20 +319,63 @@ export default function PropertyDetail() {
               </div>
 
               <div className="pt-6 border-t border-[var(--color-mist)]">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-[var(--color-cream)] flex items-center justify-center font-bold text-[var(--color-champagne-dark)]">
-                    E
-                  </div>
-                  <div>
-                    <div className="text-[14px] font-semibold text-[var(--color-charcoal)]">EstateOS Premier</div>
-                    <div className="text-[12px] text-[var(--color-stone)]">Exclusive Listing</div>
-                  </div>
+                <div className="flex gap-4 mb-6">
+                  <button className="flex-1 bg-[var(--color-charcoal)] text-white py-4 rounded-xl font-bold hover:bg-black transition-colors flex items-center justify-center gap-2">
+                    <Calendar className="w-5 h-5 text-[var(--color-champagne)]" />
+                    Schedule Tour
+                  </button>
+                  <button className="px-6 py-4 border border-[var(--color-mist-dark)] rounded-xl hover:bg-gray-50 transition-colors flex items-center justify-center">
+                    <Heart className="w-5 h-5 text-[var(--color-stone)] hover:text-red-500 transition-colors" />
+                  </button>
                 </div>
+
+                {/* Fractional Ownership Section */}
+                {fractionalData && (
+                  <div className="p-6 bg-[var(--color-warm-white)] rounded-2xl border border-[var(--color-champagne-light)] relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--color-champagne-light)]/20 rounded-bl-full -z-10" />
+                    <h3 className="text-lg font-bold text-[var(--color-charcoal)] mb-2 font-display flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-[var(--color-champagne-dark)]" />
+                      Fractional Ownership
+                    </h3>
+                    <p className="text-[13px] text-[var(--color-stone)] mb-4">Invest in high-yield real estate starting from just 10 shares.</p>
+                    
+                    <div className="grid grid-cols-2 gap-4 mb-6">
+                      <div className="bg-white p-3 rounded-xl border border-[var(--color-mist)]">
+                        <p className="text-[10px] uppercase tracking-wider text-[var(--color-stone-light)] mb-1">Price Per Share</p>
+                        <p className="text-[16px] font-bold text-[var(--color-charcoal)]">₹{fractionalData.pricePerShare}</p>
+                      </div>
+                      <div className="bg-white p-3 rounded-xl border border-[var(--color-mist)]">
+                        <p className="text-[10px] uppercase tracking-wider text-[var(--color-stone-light)] mb-1">Available Shares</p>
+                        <p className="text-[16px] font-bold text-[var(--color-charcoal)]">{fractionalData.availableShares} / {fractionalData.totalShares}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3 mb-4">
+                      <input 
+                        type="number" 
+                        min="1" 
+                        max={fractionalData.availableShares} 
+                        value={sharesToBuy}
+                        onChange={(e) => setSharesToBuy(Number(e.target.value))}
+                        className="w-24 px-3 py-2 bg-white border border-[var(--color-mist)] rounded-xl text-[14px] text-center focus:outline-none focus:border-[var(--color-champagne)]"
+                      />
+                      <span className="text-[13px] text-[var(--color-stone)] font-medium">shares (₹{sharesToBuy * fractionalData.pricePerShare})</span>
+                    </div>
+
+                    <button 
+                      onClick={handleBuyShares}
+                      disabled={buyingShares || fractionalData.availableShares < sharesToBuy}
+                      className="w-full bg-[var(--color-champagne-dark)] text-white py-3 rounded-xl font-bold hover:bg-yellow-700 transition-colors flex items-center justify-center gap-2 uppercase tracking-widest text-[13px]"
+                    >
+                      {buyingShares ? 'Processing...' : 'Invest Now'}
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Ownership & Tenant Ledger */}
-            <div className="mt-8 reveal-text">
+            <div className="mt-8">
               <OwnershipLedger 
                 ownershipHistory={property.ownershipHistory || []} 
                 tenantHistory={property.tenantHistory || []} 
@@ -337,6 +443,7 @@ export default function PropertyDetail() {
         </div>
       )}
       
+      <AIPropertyChat propertyId={property._id} propertyName={property.title} />
     </div>
   );
 }

@@ -157,7 +157,7 @@ export default function DocumentVault({
                 </div>
                 <div className="truncate">
                   <a 
-                    href={`http://localhost:5000${doc}`} 
+                    href={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${doc}`} 
                     target="_blank" 
                     rel="noreferrer"
                     className="text-[13px] font-medium text-[var(--color-charcoal)] hover:text-[var(--color-champagne-dark)] transition-colors truncate block"

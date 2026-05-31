@@ -14,44 +14,13 @@ export const globalSearch = async (req, res, next) => {
       return res.status(200).json({ success: true, data: [] });
     }
 
-    const regex = new RegExp(q, 'i');
-
-    // 1. Search Properties
-    const propertyResults = await Property.find({
-      $or: [
-        { title: regex },
-        { city: regex },
-        { address: regex },
-        { propertyType: regex }
-      ]
-    }).limit(5).select('title city propertyType status price');
-
-    // 2. Search Users (Investors/Tenants/Landlords)
-    const userResults = await User.find({
-      $or: [
-        { name: regex },
-        { email: regex },
-        { role: regex }
-      ]
-    }).limit(5).select('name email role');
-
-    // 3. Search Leases (Tenants)
-    const leaseResults = await Tenant.find({
-      $or: [
-        { firstName: regex },
-        { lastName: regex },
-        { email: regex }
-      ]
-    }).limit(5).select('firstName lastName property status');
-
-    // 4. Search Tickets
-    const ticketResults = await MaintenanceTicket.find({
-      $or: [
-        { title: regex },
-        { category: regex },
-        { status: regex }
-      ]
-    }).limit(5).select('title category status priority');
+    // Parallelized text search with limit of 3
+    const [propertyResults, userResults, leaseResults, ticketResults] = await Promise.all([
+      Property.find({ $text: { $search: q } }).limit(3).select('title city propertyType status price'),
+      User.find({ $text: { $search: q } }).limit(3).select('name email role'),
+      Tenant.find({ $text: { $search: q } }).limit(3).select('firstName lastName property status'),
+      MaintenanceTicket.find({ $text: { $search: q } }).limit(3).select('title category status priority')
+    ]);
 
     // Format for OmniBar
     const formattedResults = [

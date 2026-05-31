@@ -7,11 +7,11 @@ import { useAuthStore } from '../store/useAuthStore';
 export let socketInstance: Socket | null = null;
 
 export const useSocket = () => {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && user) {
       // Get the token from cookies or however it's stored. 
       // Since it's HTTP-only cookie, we might not have it in JS, but wait!
       // In our auth logic, does the frontend have the token?
@@ -28,6 +28,7 @@ export const useSocket = () => {
 
       socket.on('connect', () => {
         console.log('🔌 Connected to EstateOS Realtime Engine');
+        socket.emit('join', user._id || user.id);
       });
 
       socket.on('notification', (data) => {
@@ -56,7 +57,7 @@ export const useSocket = () => {
         socketInstance = null;
       };
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user]);
 
   return socketRef.current;
 };

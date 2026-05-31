@@ -4,6 +4,7 @@ import { useAuthStore } from '../../store/useAuthStore';
 import { CreditCard, FileText, Wrench, Star } from 'lucide-react';
 import api from '../../lib/axios';
 import { loadRazorpay } from '../../lib/razorpay';
+import toast from 'react-hot-toast';
 
 export default function TenantDashboard() {
   const { user } = useAuthStore();
@@ -61,7 +62,12 @@ export default function TenantDashboard() {
         },
       };
 
-      const rzp = await loadRazorpay(options);
+      const RazorpayConstructor = await loadRazorpay();
+      if (!RazorpayConstructor) {
+        toast.error('Failed to load Razorpay');
+        return;
+      }
+      const rzp = new RazorpayConstructor(options);
       rzp.open();
     } catch (err) {
       console.error('Failed to initiate payment', err);
@@ -158,7 +164,15 @@ export default function TenantDashboard() {
           <p className="text-[12px] text-[var(--color-stone)] mb-6">
             {lease ? `Expires ${new Date(lease.leaseEnd).toLocaleDateString()}` : 'Contact your landlord'}
           </p>
-          <button className="w-full py-2.5 bg-[var(--color-warm-white)] text-[var(--color-charcoal)] border border-[var(--color-mist)] text-[13px] font-medium rounded-lg hover:bg-[var(--color-cream)] transition-colors">
+          <button 
+            onClick={() => {
+              if (lease?.documents?.[0]) {
+                window.open(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${lease.documents[0]}`, '_blank');
+              } else {
+                toast.error('No agreement uploaded yet');
+              }
+            }}
+            className="w-full py-2.5 bg-[var(--color-warm-white)] text-[var(--color-charcoal)] border border-[var(--color-mist)] text-[13px] font-medium rounded-lg hover:bg-[var(--color-cream)] transition-colors">
             View Agreement
           </button>
         </motion.div>

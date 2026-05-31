@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, ChevronLeft, ChevronRight, MoreHorizontal, User, Mail, Phone, Calendar, ArrowUpDown, Plus, CreditCard, Star, X } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, MoreHorizontal, User, Mail, ArrowUpDown, Plus, CreditCard, Star, X, Download } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../lib/axios';
+import { generateTenantLedger } from '../../utils/reportGenerator';
 
 interface Tenant {
   _id: string;
@@ -363,6 +364,21 @@ export default function Tenants() {
                           >
                             <CreditCard className="w-3.5 h-3.5" />
                             Pay Rent (Test)
+                          </button>
+                          <button 
+                            onClick={async () => {
+                              try {
+                                const { data } = await api.get('/transactions', { params: { tenant: tenant._id } });
+                                generateTenantLedger(tenant, data.data);
+                                setActiveMenu(null);
+                              } catch(err) {
+                                toast.error('Failed to generate ledger');
+                              }
+                            }}
+                            className="w-full flex items-center gap-2 px-3 py-1.5 text-[13px] text-[var(--color-charcoal)] hover:bg-[var(--color-cream)] font-medium transition-colors"
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                            Download Ledger
                           </button>
                         </motion.div>
                       )}

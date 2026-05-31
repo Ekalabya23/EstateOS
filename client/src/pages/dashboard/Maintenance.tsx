@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, X, Search, CheckCircle2, Clock, AlertCircle, Wrench, ChevronRight } from 'lucide-react';
+import { Plus, X, Search, CheckCircle2, Clock, AlertCircle, Wrench,  } from 'lucide-react';
 import api from '../../lib/axios';
 import { useAuthStore } from '../../store/useAuthStore';
+import toast from 'react-hot-toast';
 
 export default function Maintenance() {
   const { user } = useAuthStore();
@@ -21,6 +22,8 @@ export default function Maintenance() {
   const [newDesc, setNewDesc] = useState('');
   const [newCategory, setNewCategory] = useState('Plumbing');
   const [newPriority, setNewPriority] = useState('Medium');
+  const [newImages, setNewImages] = useState<string[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
   // Temporary: we assume the tenant has an active lease and we'll get the property ID from the backend eventually, or we fetch it. For now, we will fetch the tenant's lease on mount.
   const [myPropertyId, setMyPropertyId] = useState('');
 
@@ -75,14 +78,35 @@ export default function Maintenance() {
         description: newDesc,
         category: newCategory,
         priority: newPriority,
-        property: myPropertyId
+        property: myPropertyId,
+        beforeImages: newImages
       });
       setTickets([data.data, ...tickets]);
       setShowNewTicketModal(false);
       setNewTitle('');
       setNewDesc('');
+      setNewImages([]);
     } catch (err) {
       console.error('Failed to create ticket', err);
+      toast.error('Failed to create ticket');
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', e.target.files[0]);
+      const res = await api.post('/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      setNewImages([...newImages, res.data.data]);
+      toast.success('Photo uploaded');
+    } catch (error) {
+      toast.error('Failed to upload photo');
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -386,6 +410,25 @@ export default function Maintenance() {
                     placeholder="Describe the issue in detail..."
                     className="w-full px-4 py-3 border border-[var(--color-mist)] rounded-xl text-[13px] focus:outline-none focus:ring-1 focus:ring-[var(--color-champagne)] resize-none"
                   />
+                </div>
+
+                <div>
+                  <label className="block text-[12px] font-medium text-[var(--color-stone)] mb-1">Upload Photo (Optional)</label>
+                  <input 
+                    type="file" 
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    disabled={isUploading}
+                    className="block w-full text-[12px] text-[var(--color-stone)] file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-[12px] file:font-semibold file:bg-[var(--color-charcoal)] file:text-white hover:file:bg-black transition-colors"
+                  />
+                  {isUploading && <span className="text-[11px] text-[var(--color-champagne-dark)]">Uploading...</span>}
+                  {newImages.length > 0 && (
+                    <div className="mt-2 flex gap-2">
+                      {newImages.map((img, i) => (
+                        <img key={i} src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${img}`} alt="Upload" className="h-12 w-12 object-cover rounded-lg border border-[var(--color-mist)]" />
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <button 

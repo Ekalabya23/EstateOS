@@ -1,4 +1,5 @@
 import Tenant from '../models/Tenant.js';
+import Transaction from '../models/Transaction.js';
 
 // @desc    Get all tenants
 // @route   GET /api/v1/tenants
@@ -160,5 +161,21 @@ export const rateTenant = async (req, res) => {
     res.status(200).json({ success: true, data: tenant });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Failed to rate tenant', error: error.message });
+  }
+};
+
+// @desc    Get logged in user's payment history
+// @route   GET /api/v1/tenants/me/payments
+// @access  Private (Tenant)
+export const getMyPayments = async (req, res) => {
+  try {
+    const transactions = await Transaction.find({ 
+      user: req.user._id,
+      category: 'rent'
+    }).sort('-date');
+    
+    res.status(200).json({ success: true, count: transactions.length, data: transactions });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to fetch payments', error: error.message });
   }
 };

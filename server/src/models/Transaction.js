@@ -14,4 +14,8 @@ const transactionSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+transactionSchema.index({ owner: 1, date: -1 });
+transactionSchema.index({ property: 1, type: 1 });
+transactionSchema.index({ owner: 1, type: 1, date: -1 });
+
 export default mongoose.model('Transaction', transactionSchema);

@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { DollarSign, ArrowUpRight, ArrowDownRight, Activity, Plus } from 'lucide-react';
+import { DollarSign, ArrowUpRight, ArrowDownRight, Activity, Plus, Download } from 'lucide-react';
 import StatCard from '../../components/dashboard/StatCard';
 import api from '../../lib/axios';
+import { generateIncomeStatement } from '../../utils/reportGenerator';
 
 interface Transaction {
   _id: string;
@@ -64,13 +65,22 @@ export default function Financials() {
           </h1>
           <p className="text-[12px] text-[var(--color-stone)] mt-0.5">Overview of your portfolio's cash flow</p>
         </div>
-        <button
-          onClick={() => navigate('/dashboard/financials/new')}
-          className="flex items-center gap-2 px-4 py-2 bg-[var(--color-charcoal)] text-white text-[13px] font-medium rounded-lg hover:bg-[var(--color-champagne-dark)] transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          Log Transaction
-        </button>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <button
+            onClick={() => generateIncomeStatement([], transactions)}
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-white border border-[var(--color-mist)] text-[var(--color-charcoal)] text-[13px] font-medium rounded-lg hover:bg-gray-50 transition-colors shadow-sm"
+          >
+            <Download className="w-4 h-4" />
+            Download Statement
+          </button>
+          <button
+            onClick={() => navigate('/dashboard/financials/new')}
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-[var(--color-charcoal)] text-white text-[13px] font-medium rounded-lg hover:bg-[var(--color-champagne-dark)] transition-colors shadow-sm"
+          >
+            <Plus className="w-4 h-4" />
+            Log Transaction
+          </button>
+        </div>
       </motion.div>
 
       {/* KPI Grid */}

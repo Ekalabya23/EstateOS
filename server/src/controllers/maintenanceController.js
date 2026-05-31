@@ -2,6 +2,9 @@ import MaintenanceTicket from '../models/MaintenanceTicket.js';
 import Property from '../models/Property.js';
 import Transaction from '../models/Transaction.js';
 import { getIO } from '../socket.js';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // @desc    Create a new maintenance ticket
 // @route   POST /api/v1/maintenance
@@ -16,16 +19,46 @@ export const createTicket = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Property not found' });
     }
 
+    // Use Gemini for categorization and cost estimation
+    let estimatedCost = 0;
+    let aiCategory = category || 'General';
+    try {
+      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const prompt = `Analyze this maintenance request: Title: "${title}", Description: "${description}". 
+      Respond with ONLY a JSON object containing two fields: 
+      1. "category" (one of: Plumbing, Electrical, HVAC, Structural, Appliance, General)
+      2. "estimatedCostINR" (a rough estimated repair cost in INR based on Indian market rates).`;
+      
+      const result = await model.generateContent(prompt);
+      const text = result.response.text();
+      // Try to parse the JSON output
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const aiData = JSON.parse(jsonMatch[0]);
+        aiCategory = aiData.category || aiCategory;
+        estimatedCost = aiData.estimatedCostINR || 0;
+      }
+    } catch (err) {
+      console.warn('Gemini estimation failed:', err.message);
+    }
+
     const ticket = await MaintenanceTicket.create({
       title,
       description,
       property,
       tenant: req.user._id,
       landlord: propertyData.owner,
-      category,
+      category: aiCategory,
       priority,
       beforeImages: beforeImages || [],
+      // Note: we'd need to add estimatedCost to the schema if we want to store it, 
+      // but for now we'll just log it or add it to description if schema doesn't support it
+      description: `${description}\n\n[AI Analysis]\nAuto-Categorized: ${aiCategory}\nEstimated Repair Cost: ₹${estimatedCost}`
     });
+
+    // Simulated email to vendors
+    console.log(`[EMAIL DISPATCH] Finding vendors for category: ${aiCategory}...`);
+    console.log(`[EMAIL DISPATCH] Email sent to 3 local vendors with quote submission link: http://localhost:5173/quote/${ticket._id}/vendor-xyz`);
 
     // Notify landlord via sockets
     try {

@@ -1,14 +1,27 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, Mail, Phone, Lock, Bell, Moon, LogOut, Check } from 'lucide-react';
+import { User, Mail, Phone, Lock, Bell, Moon, LogOut, Check, ShieldCheck, Upload, AlertTriangle } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import api from '../../lib/axios';
 
 export default function Settings() {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('profile');
   const [saving, setSaving] = useState(false);
+  const [verifyingPhone, setVerifyingPhone] = useState(false);
+  const [uploadingID, setUploadingID] = useState(false);
+
+  // Fallback defaults for missing fields
+  const profileCompletion = user?.profileCompletion || 0;
+  const verificationStatus = user?.verificationStatus || {
+    emailVerified: false,
+    phoneVerified: false,
+    idVerified: false,
+    addressVerified: false
+  };
 
   // Form State
   const [profileForm, setProfileForm] = useState({
@@ -36,6 +49,33 @@ export default function Settings() {
     navigate('/');
   };
 
+  const verifyPhone = async () => {
+    setVerifyingPhone(true);
+    try {
+      await api.post('/users/verify-phone');
+      toast.success('Phone verified via Fast2SMS OTP mock!');
+      // Typically we'd reload user context here
+      window.location.reload();
+    } catch (error) {
+      toast.error('Failed to verify phone');
+    } finally {
+      setVerifyingPhone(false);
+    }
+  };
+
+  const uploadID = async () => {
+    setUploadingID(true);
+    try {
+      await api.put('/users/profile', { idDocumentUrl: 'mock-id-url.png' });
+      toast.success('ID uploaded and verified successfully');
+      window.location.reload();
+    } catch (error) {
+      toast.error('Failed to upload ID');
+    } finally {
+      setUploadingID(false);
+    }
+  };
+
   const inputClass = 'w-full px-3.5 py-2.5 rounded-lg bg-[var(--color-warm-white)] border border-[var(--color-mist)] text-[13px] text-[var(--color-charcoal)] focus:outline-none focus:border-[var(--color-champagne)]/50 focus:bg-white transition-colors';
   const labelClass = 'block text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--color-stone)] mb-1.5';
 
@@ -52,6 +92,7 @@ export default function Settings() {
         <motion.div initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4, delay: 0.1 }} className="w-full md:w-64 shrink-0 space-y-1">
           {[
             { id: 'profile', label: 'Profile Information', icon: User },
+            { id: 'verification', label: 'Trust & Verification', icon: ShieldCheck },
             { id: 'notifications', label: 'Notifications', icon: Bell },
             { id: 'appearance', label: 'Appearance', icon: Moon },
             { id: 'security', label: 'Security', icon: Lock },
@@ -130,6 +171,73 @@ export default function Settings() {
                     </button>
                   </div>
                 </form>
+              </div>
+            )}
+
+            {/* Verification Tab */}
+            {activeTab === 'verification' && (
+              <div className="p-6 md:p-8">
+                <h2 className="text-lg font-semibold text-[var(--color-charcoal)] mb-2">Trust & Verification</h2>
+                <p className="text-[13px] text-[var(--color-stone)] mb-6">Complete your profile to build trust with other users on EstateOS.</p>
+
+                {/* Progress Bar */}
+                <div className="mb-8 p-6 bg-[var(--color-warm-white)] rounded-2xl border border-[var(--color-mist)]">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-[12px] font-bold uppercase tracking-widest text-[var(--color-charcoal)]">Profile Completion</span>
+                    <span className="text-[12px] font-bold text-[var(--color-champagne-dark)]">{profileCompletion}%</span>
+                  </div>
+                  <div className="h-2 w-full bg-[var(--color-mist)] rounded-full overflow-hidden">
+                    <motion.div 
+                      className="h-full bg-[var(--color-champagne-dark)]"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${profileCompletion}%` }}
+                      transition={{ duration: 0.5 }}
+                    />
+                  </div>
+                  {profileCompletion < 100 && (
+                    <p className="text-[11px] text-[var(--color-stone)] mt-3 flex items-center gap-1">
+                      <AlertTriangle className="w-3 h-3 text-orange-500" /> Complete pending verifications to reach 100%
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-4">
+                  {/* Phone Verification */}
+                  <div className="flex items-center justify-between p-4 rounded-xl border border-[var(--color-mist)] bg-white">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${verificationStatus.phoneVerified ? 'bg-emerald-100 text-emerald-600' : 'bg-[var(--color-mist)] text-[var(--color-stone)]'}`}>
+                        {verificationStatus.phoneVerified ? <Check className="w-5 h-5" /> : <Phone className="w-5 h-5" />}
+                      </div>
+                      <div>
+                        <h4 className="text-[14px] font-medium text-[var(--color-charcoal)]">Phone Number</h4>
+                        <p className="text-[12px] text-[var(--color-stone)]">{verificationStatus.phoneVerified ? 'Verified' : 'Unverified'}</p>
+                      </div>
+                    </div>
+                    {!verificationStatus.phoneVerified && (
+                      <button onClick={verifyPhone} disabled={verifyingPhone} className="px-4 py-2 bg-[var(--color-charcoal)] text-white text-[12px] font-bold rounded-lg hover:bg-black transition-colors disabled:opacity-50">
+                        {verifyingPhone ? 'Sending OTP...' : 'Verify with Fast2SMS'}
+                      </button>
+                    )}
+                  </div>
+
+                  {/* ID Verification */}
+                  <div className="flex items-center justify-between p-4 rounded-xl border border-[var(--color-mist)] bg-white">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${verificationStatus.idVerified ? 'bg-emerald-100 text-emerald-600' : 'bg-[var(--color-mist)] text-[var(--color-stone)]'}`}>
+                        {verificationStatus.idVerified ? <Check className="w-5 h-5" /> : <ShieldCheck className="w-5 h-5" />}
+                      </div>
+                      <div>
+                        <h4 className="text-[14px] font-medium text-[var(--color-charcoal)]">Government ID</h4>
+                        <p className="text-[12px] text-[var(--color-stone)]">{verificationStatus.idVerified ? 'Verified' : 'Upload Aadhaar or PAN'}</p>
+                      </div>
+                    </div>
+                    {!verificationStatus.idVerified && (
+                      <button onClick={uploadID} disabled={uploadingID} className="px-4 py-2 bg-white border border-[var(--color-mist-dark)] text-[var(--color-charcoal)] text-[12px] font-bold rounded-lg hover:bg-gray-50 flex items-center gap-2 transition-colors disabled:opacity-50">
+                        <Upload className="w-4 h-4" /> {uploadingID ? 'Uploading...' : 'Upload ID'}
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
 

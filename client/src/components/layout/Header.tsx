@@ -4,13 +4,6 @@ import { ArrowRight, Menu, X, LogOut, LayoutDashboard } from "lucide-react";
 import { useAuthStore } from "../../store/useAuthStore";
 import { useNavigate } from "react-router-dom";
 
-const navLinks = [
-  { label: "Residences", href: "#portfolio" },
-  { label: "Intelligence", href: "#analytics" },
-  { label: "Platform", href: "#platform" },
-  { label: "Browse Properties", href: "/properties" },
-];
-
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);

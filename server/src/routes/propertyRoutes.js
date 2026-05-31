@@ -9,25 +9,33 @@ import {
   getPortfolioStats,
   buyProperty,
   rentProperty,
-  calculatePropertyHealth
+  calculatePropertyHealth,
+  getPropertyPassport,
+  submitInspection
 } from '../controllers/propertyController.js';
 import { protect, authorize } from '../middleware/auth.js';
+import { cacheRoute } from '../middleware/cacheMiddleware.js';
 
 const router = express.Router();
 
-// Public routes
-router.get('/', getAllProperties);
-router.get('/:id', getProperty);
+// Stats routes (Must be before /:id)
+router.get('/portfolio/stats', protect, authorize('user', 'landlord', 'admin'), getPortfolioStats);
+router.get('/stats', protect, cacheRoute(600), getPropertyStats);
 
-// Protected routes
-router.use(protect);
-router.get('/portfolio/stats', authorize('user', 'landlord', 'admin'), getPortfolioStats);
-router.get('/:id/health', authorize('admin', 'landlord', 'investor'), calculatePropertyHealth);
-router.get('/stats', getPropertyStats);
-router.post('/:id/buy', authorize('user'), buyProperty);
-router.post('/:id/rent', authorize('tenant'), rentProperty);
-router.post('/', authorize('user', 'landlord', 'admin'), createProperty);
-router.put('/:id', updateProperty);
-router.delete('/:id', deleteProperty);
+// Public routes
+router.get('/', cacheRoute(300), getAllProperties);
+
+// Protected root routes
+router.post('/', protect, authorize('user', 'landlord', 'admin'), createProperty);
+
+// Parameterized routes (/:id)
+router.get('/:id', getProperty);
+router.get('/:id/health', protect, authorize('admin', 'landlord', 'investor'), calculatePropertyHealth);
+router.post('/:id/buy', protect, authorize('user'), buyProperty);
+router.post('/:id/rent', protect, authorize('tenant'), rentProperty);
+router.put('/:id', protect, updateProperty);
+router.delete('/:id', protect, deleteProperty);
+router.get('/:id/passport', getPropertyPassport); // Public access allowed for QR scanning
+router.post('/:id/inspections', protect, authorize('admin', 'landlord', 'tenant'), submitInspection);
 
 export default router;

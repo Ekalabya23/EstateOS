@@ -346,11 +346,15 @@ export default function Properties() {
                         exit={{ opacity: 0, scale: 0.96 }}
                         className="absolute right-0 top-full mt-1 w-36 bg-white rounded-lg shadow-[var(--shadow-editorial)] border border-[var(--color-mist)] overflow-hidden py-0.5 z-20"
                       >
-                        <button className="w-full flex items-center gap-2 px-3 py-1.5 text-[13px] text-[var(--color-charcoal)] hover:bg-[var(--color-warm-white)]">
+                        <button 
+                          onClick={() => navigate(`/properties/${prop._id}`)}
+                          className="w-full flex items-center gap-2 px-3 py-1.5 text-[13px] text-[var(--color-charcoal)] hover:bg-[var(--color-warm-white)]">
                           <Eye className="w-3.5 h-3.5 text-[var(--color-stone)]" />{" "}
                           View
                         </button>
-                        <button className="w-full flex items-center gap-2 px-3 py-1.5 text-[13px] text-[var(--color-charcoal)] hover:bg-[var(--color-warm-white)]">
+                        <button 
+                          onClick={() => navigate(`/dashboard/properties/${prop._id}/edit`)}
+                          className="w-full flex items-center gap-2 px-3 py-1.5 text-[13px] text-[var(--color-charcoal)] hover:bg-[var(--color-warm-white)]">
                           <Pencil className="w-3.5 h-3.5 text-[var(--color-stone)]" />{" "}
                           Edit
                         </button>

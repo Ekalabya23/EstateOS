@@ -7,6 +7,7 @@ import {
   deleteTenant,
   getMyLease,
   rateTenant,
+  getMyPayments,
 } from '../controllers/tenantController.js';
 import { protect, authorize } from '../middleware/auth.js';
 
@@ -17,6 +18,9 @@ router.use(protect);
 
 router.route('/me')
   .get(authorize('tenant'), getMyLease);
+
+router.route('/me/payments')
+  .get(authorize('tenant'), getMyPayments);
 
 router.route('/:id/rate')
   .post(authorize('admin', 'landlord'), rateTenant);

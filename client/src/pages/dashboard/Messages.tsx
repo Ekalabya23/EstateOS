@@ -48,7 +48,7 @@ export default function Messages() {
     socketInstance.on('receive_message', handleReceive);
 
     return () => {
-      socketInstance.off('receive_message', handleReceive);
+      socketInstance?.off('receive_message', handleReceive);
     };
   }, []);
 

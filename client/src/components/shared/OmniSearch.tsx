@@ -36,7 +36,7 @@ export default function OmniSearch() {
 
   // Search effect
   useEffect(() => {
-    if (query.length < 2) {
+    if (query.length < 3) {
       setResults([]);
       return;
     }
@@ -51,7 +51,7 @@ export default function OmniSearch() {
         setLoading(false);
       }
     };
-    const debounce = setTimeout(fetchResults, 300);
+    const debounce = setTimeout(fetchResults, 400);
     return () => clearTimeout(debounce);
   }, [query]);
 

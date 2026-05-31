@@ -20,4 +20,16 @@ const tenantSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+tenantSchema.index({ user: 1, status: 1 }, { 
+  unique: true, 
+  partialFilterExpression: { status: 'active' } 
+});
+tenantSchema.index({ owner: 1, status: 1 });
+tenantSchema.index({ user: 1 });
+tenantSchema.index({ property: 1 });
+tenantSchema.index({ leaseEnd: 1 });
+
+// Add text indexes for OmniSearch
+tenantSchema.index({ firstName: 'text', lastName: 'text', email: 'text' });
+
 export default mongoose.model('Tenant', tenantSchema);

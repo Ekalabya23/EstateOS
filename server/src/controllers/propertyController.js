@@ -3,7 +3,10 @@ import OwnershipHistory from '../models/OwnershipHistory.js';
 import Tenant from '../models/Tenant.js';
 import Transaction from '../models/Transaction.js';
 import MaintenanceTicket from '../models/MaintenanceTicket.js';
+import PropertyPassport from '../models/PropertyPassport.js';
+import PropertyInspection from '../models/PropertyInspection.js';
 import AppError from '../utils/AppError.js';
+import { clearCache } from '../middleware/cacheMiddleware.js';
 
 // @desc    Get all properties
 // @route   GET /api/v1/properties
@@ -36,9 +39,37 @@ export const getAllProperties = async (req, res, next) => {
         query.price.$lte = Number(req.query.maxPrice);
       }
     }
+    if (req.query.bedrooms) {
+      // If "5+" is sent, we might handle it as { $gte: 5 }
+      if (req.query.bedrooms === '5+') {
+        query.bedrooms = { $gte: 5 };
+      } else {
+        query.bedrooms = Number(req.query.bedrooms);
+      }
+    }
+    if (req.query.minArea || req.query.maxArea) {
+      query.area = {};
+      if (req.query.minArea) {
+        query.area.$gte = Number(req.query.minArea);
+      }
+      if (req.query.maxArea) {
+        query.area.$lte = Number(req.query.maxArea);
+      }
+    }
+    if (req.query.amenities) {
+      // amenities can be a comma-separated list
+      const amenitiesArray = req.query.amenities.split(',');
+      query.amenities = { $all: amenitiesArray };
+    }
 
     // Sorting
-    const sort = req.query.sort || '-createdAt';
+    let sort = '-createdAt';
+    if (req.query.sort) {
+      if (req.query.sort === 'price-asc') sort = 'price';
+      else if (req.query.sort === 'price-desc') sort = '-price';
+      else if (req.query.sort === 'area-desc') sort = '-area';
+      else sort = req.query.sort;
+    }
 
     // Pagination
     const page = parseInt(req.query.page, 10) || 1;
@@ -119,6 +150,14 @@ export const createProperty = async (req, res, next) => {
 
     const property = await Property.create(req.body);
 
+    // Clear cache since data changed
+    clearCache();
+
+    // Create empty passport entry
+    await PropertyPassport.create({
+      property: property._id
+    });
+
     res.status(201).json({
       success: true,
       data: property,
@@ -154,6 +193,9 @@ export const updateProperty = async (req, res, next) => {
       runValidators: true,
     });
 
+    // Clear cache since data changed
+    clearCache();
+
     res.status(200).json({
       success: true,
       data: property,
@@ -185,6 +227,9 @@ export const deleteProperty = async (req, res, next) => {
     }
 
     await Property.findByIdAndDelete(req.params.id);
+
+    // Clear cache since data changed
+    clearCache();
 
     res.status(200).json({
       success: true,
@@ -522,6 +567,69 @@ export const calculatePropertyHealth = async (req, res, next) => {
         score: overallScore,
         factors: property.healthFactors
       }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get or create Property Health Passport
+// @route   GET /api/v1/properties/:id/passport
+// @access  Public
+export const getPropertyPassport = async (req, res, next) => {
+  try {
+    let passport = await PropertyPassport.findOne({ property: req.params.id }).populate('events.verifiedBy', 'firstName lastName');
+    
+    if (!passport) {
+      passport = await PropertyPassport.create({
+        property: req.params.id,
+        events: [{
+          type: 'valuation',
+          title: 'Initial Property Creation',
+          description: 'Property registered on EstateOS'
+        }]
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: passport
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Submit Move-In/Move-Out Inspection
+// @route   POST /api/v1/properties/:id/inspections
+// @access  Private (Admin, Landlord, Tenant)
+export const submitInspection = async (req, res, next) => {
+  try {
+    const propertyId = req.params.id;
+    
+    const inspection = await PropertyInspection.create({
+      ...req.body,
+      property: propertyId,
+      conductedBy: req.user.id,
+      completedAt: Date.now()
+    });
+
+    // Log to passport
+    let passport = await PropertyPassport.findOne({ property: propertyId });
+    if (passport) {
+      passport.events.push({
+        type: 'inspection',
+        title: `${req.body.type} Inspection Completed`,
+        description: req.body.overallCondition || 'Inspection submitted',
+        verifiedBy: req.user.id
+      });
+      passport.lastInspectionDate = Date.now();
+      await passport.save();
+    }
+
+    res.status(201).json({
+      success: true,
+      data: inspection
     });
   } catch (error) {
     next(error);

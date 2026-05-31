@@ -39,6 +39,7 @@ export default function DashboardOverview() {
   const [stats, setStats] = useState<PropertyStats | null>(null);
   const [revenueData, setRevenueData] = useState<any[]>([]);
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
+  const [timeRange, setTimeRange] = useState('1Y');
   const [, setLoading] = useState(true);
 
   useEffect(() => {
@@ -46,7 +47,7 @@ export default function DashboardOverview() {
       try {
         const [propStats, transStats, transList] = await Promise.all([
           api.get("/properties/stats"),
-          api.get("/transactions/stats"),
+          api.get("/transactions/stats", { params: { range: timeRange } }),
           api.get("/transactions", { params: { limit: 5 } }),
         ]);
         setStats(propStats.data.data);
@@ -61,7 +62,7 @@ export default function DashboardOverview() {
       }
     };
     fetchData();
-  }, []);
+  }, [timeRange]);
 
   const occupiedCount =
     stats?.byStatus?.find((s) => s._id === "rented")?.count || 0;
@@ -161,8 +162,9 @@ export default function DashboardOverview() {
               {["1M", "6M", "1Y", "All"].map((range) => (
                 <button
                   key={range}
+                  onClick={() => setTimeRange(range)}
                   className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors ${
-                    range === "1Y"
+                    range === timeRange
                       ? "bg-[var(--color-charcoal)] text-white"
                       : "text-[var(--color-stone)] hover:bg-[var(--color-warm-white)]"
                   }`}

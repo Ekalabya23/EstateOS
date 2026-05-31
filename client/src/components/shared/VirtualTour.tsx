@@ -1,7 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect,  useState } from 'react';
 import { ReactPhotoSphereViewer } from 'react-photo-sphere-viewer';
 import { X, Loader2 } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 interface VirtualTourProps {
   imageSrc: string;

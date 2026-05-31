@@ -97,5 +97,11 @@ propertySchema.virtual('id').get(function () {
   return this._id;
 });
 
+propertySchema.index({ owner: 1, status: 1 });
+propertySchema.index({ city: 1, propertyType: 1, status: 1 });
+propertySchema.index({ price: 1 });
+propertySchema.index({ 'coordinates': '2dsphere' });
+propertySchema.index({ title: 'text', city: 'text', address: 'text', propertyType: 'text' });
+
 const Property = mongoose.model('Property', propertySchema);
 export default Property;

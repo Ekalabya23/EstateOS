@@ -33,8 +33,14 @@ export default function TenantDashboard() {
         amount: lease.rentAmount,
       });
 
+      const rzpKey = import.meta.env.VITE_RAZORPAY_KEY_ID || orderData.data.keyId;
+      if (!rzpKey) {
+        toast.error('Razorpay key is missing');
+        return;
+      }
+
       const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        key: rzpKey,
         amount: orderData.data.amount,
         currency: 'INR',
         name: 'EstateOS',

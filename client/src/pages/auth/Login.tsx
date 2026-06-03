@@ -27,7 +27,7 @@ export default function Login() {
       
       let defaultDashboard = "/dashboard";
       if (userData.role === 'tenant') defaultDashboard = "/dashboard/tenant";
-      else if (userData.role === 'investor') defaultDashboard = "/dashboard/investor";
+      else if (userData.role === 'user') defaultDashboard = "/dashboard/investor";
       else if (userData.role === 'admin') defaultDashboard = "/dashboard/admin";
 
       const from = location.state?.from?.pathname || defaultDashboard;

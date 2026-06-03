@@ -1,10 +1,21 @@
 import express from 'express';
-import { upload, uploadFile } from '../controllers/uploadController.js';
+import { pickUploadedFile, upload, uploadFile } from '../controllers/uploadController.js';
 import { protect } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Allow uploading multiple types of files: images, documents, floorPlans
-router.post('/', protect, upload.single('file'), uploadFile);
+// Accept the field names used across the app: file, image, photo, and document.
+router.post(
+  '/',
+  protect,
+  upload.fields([
+    { name: 'file', maxCount: 1 },
+    { name: 'image', maxCount: 1 },
+    { name: 'photo', maxCount: 1 },
+    { name: 'document', maxCount: 1 },
+  ]),
+  pickUploadedFile,
+  uploadFile
+);
 
 export default router;

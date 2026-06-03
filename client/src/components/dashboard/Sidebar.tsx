@@ -70,7 +70,7 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose
 
   const currentNavItems = user?.role === 'tenant' 
     ? tenantNavItems 
-    : (user?.role === 'investor' || user?.role === 'user') 
+    : (user?.role === 'user')
       ? investorNavItems 
       : landlordNavItems;
 

@@ -43,7 +43,7 @@ export default function PropertyDetail() {
         // Fetch fractional data if exists
         try {
           const fracRes = await api.get(`/fractional/${id}`);
-          setFractionalData(fracRes.data.data);
+          setFractionalData(fracRes.data.data || null);
         } catch (err) {
           // It's ok if it's not a fractional property
         }

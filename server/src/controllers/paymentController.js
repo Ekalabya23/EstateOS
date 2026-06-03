@@ -2,15 +2,17 @@ import Razorpay from 'razorpay';
 import crypto from 'crypto';
 import Transaction from '../models/Transaction.js';
 import Tenant from '../models/Tenant.js';
-import dotenv from 'dotenv';
 import { getIO } from '../socket.js';
+import { env } from '../config/env.js';
 
-dotenv.config();
+const hasRazorpayConfig = Boolean(env.RAZORPAY_KEY_ID && env.RAZORPAY_KEY_SECRET);
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
+const razorpay = hasRazorpayConfig
+  ? new Razorpay({
+      key_id: env.RAZORPAY_KEY_ID,
+      key_secret: env.RAZORPAY_KEY_SECRET,
+    })
+  : null;
 
 // @desc    Create Razorpay Order
 // @route   POST /api/v1/payments/create-order
@@ -19,8 +21,19 @@ export const createOrder = async (req, res) => {
   try {
     const { amount, currency = 'INR', receipt = 'receipt#1' } = req.body;
 
+    if (!razorpay) {
+      return res.status(503).json({
+        success: false,
+        message: 'Razorpay is not configured. Please set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET.',
+      });
+    }
+
+    if (!amount || Number(amount) <= 0) {
+      return res.status(400).json({ success: false, message: 'A valid amount is required' });
+    }
+
     const options = {
-      amount: amount * 100, // amount in smallest currency unit
+      amount: Math.round(Number(amount) * 100), // amount in smallest currency unit
       currency,
       receipt,
     };
@@ -29,7 +42,10 @@ export const createOrder = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      data: order,
+      data: {
+        ...order,
+        keyId: env.RAZORPAY_KEY_ID,
+      },
     });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Razorpay order creation failed', error: error.message });
@@ -43,10 +59,17 @@ export const verifyPayment = async (req, res) => {
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature, amount, tenantId, propertyId } = req.body;
 
+    if (!hasRazorpayConfig) {
+      return res.status(503).json({
+        success: false,
+        message: 'Razorpay is not configured. Please set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET.',
+      });
+    }
+
     const body = razorpay_order_id + "|" + razorpay_payment_id;
 
     const expectedSignature = crypto
-      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+      .createHmac('sha256', env.RAZORPAY_KEY_SECRET)
       .update(body.toString())
       .digest('hex');
 

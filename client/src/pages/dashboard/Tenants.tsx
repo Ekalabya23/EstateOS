@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, ChevronLeft, ChevronRight, MoreHorizontal, User, Mail, ArrowUpDown, Plus, CreditCard, Star, X, Download } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../lib/axios';
+import { loadRazorpay } from '../../lib/razorpay';
 import { generateTenantLedger } from '../../utils/reportGenerator';
 
 interface Tenant {
@@ -109,8 +110,14 @@ export default function Tenants() {
         amount: tenant.rentAmount,
       });
 
+      const rzpKey = import.meta.env.VITE_RAZORPAY_KEY_ID || orderData.data.keyId;
+      if (!rzpKey) {
+        toast.error('Razorpay key is missing');
+        return;
+      }
+
       const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_R7iV6LAv6BMWCp',
+        key: rzpKey,
         amount: orderData.data.amount,
         currency: 'INR',
         name: 'EstateOS',
@@ -139,7 +146,12 @@ export default function Tenants() {
         },
       };
 
-      const paymentObject = new (window as any).Razorpay(options);
+      const RazorpayConstructor = await loadRazorpay();
+      if (!RazorpayConstructor) {
+        toast.error('Failed to load Razorpay');
+        return;
+      }
+      const paymentObject = new RazorpayConstructor(options);
       paymentObject.open();
       setActiveMenu(null);
     } catch (err) {

@@ -44,5 +44,12 @@ const fractionalPropertySchema = new mongoose.Schema({
   timestamps: true
 });
 
+fractionalPropertySchema.pre('save', function(next) {
+  if (this.isNew && this.availableShares === undefined) {
+    this.availableShares = this.totalShares;
+  }
+  next();
+});
+
 const FractionalProperty = mongoose.model('FractionalProperty', fractionalPropertySchema);
 export default FractionalProperty;

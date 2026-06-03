@@ -19,7 +19,7 @@ dotenv.config({ path: path.resolve(__dirname, '../../.env') });
  * List of required environment variables.
  * In development, defaults are provided where possible.
  */
-const requiredVars = ['MONGODB_URI', 'JWT_SECRET'];
+const requiredVars = ['JWT_SECRET'];
 
 const validateEnv = () => {
   const missing = [];
@@ -53,7 +53,7 @@ export const env = {
   PORT: parseInt(process.env.PORT, 10) || 5000,
 
   // ─── Database ──────────────────────────────────────────────────────────────
-  MONGODB_URI: process.env.MONGODB_URI || 'mongodb://localhost:27017/estateos',
+  MONGODB_URI: process.env.MONGODB_URI || process.env.MONGO_URI || 'mongodb://localhost:27017/estateos',
 
   // ─── JWT ───────────────────────────────────────────────────────────────────
   JWT_SECRET: process.env.JWT_SECRET || 'dev-jwt-secret-change-in-production',
@@ -68,6 +68,11 @@ export const env = {
   // ─── Razorpay ──────────────────────────────────────────────────────────────
   RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID || '',
   RAZORPAY_KEY_SECRET: process.env.RAZORPAY_KEY_SECRET || '',
+
+  // ─── AI Providers ──────────────────────────────────────────────────────────
+  GEMINI_API_KEY: process.env.GEMINI_API_KEY || '',
+  GEMINI_MODEL: process.env.GEMINI_MODEL || 'gemini-2.0-flash-lite',
+  REPLICATE_API_TOKEN: process.env.REPLICATE_API_TOKEN || '',
 
   // ─── Client ────────────────────────────────────────────────────────────────
   CLIENT_URL: process.env.CLIENT_URL || 'http://localhost:5173',

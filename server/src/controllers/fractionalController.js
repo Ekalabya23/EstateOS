@@ -9,7 +9,10 @@ export const getFractionalProperty = async (req, res, next) => {
       .populate('investors.user', 'firstName lastName');
 
     if (!fraction) {
-      return next(new AppError('Fractional details not found for this property', 404));
+      return res.status(200).json({
+        success: true,
+        data: null
+      });
     }
 
     res.status(200).json({

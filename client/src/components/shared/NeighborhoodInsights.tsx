@@ -13,6 +13,26 @@ interface InsightsProps {
   lng: number;
 }
 
+const fallbackNeighborhoodSummary = 'This vibrant neighborhood offers excellent connectivity and convenience. With top-rated schools, reliable healthcare, and popular dining spots just a short walk away, it provides the perfect balance of lifestyle and practicality. Everything you need for comfortable urban living is right at your doorstep.';
+
+const toSummaryText = (value: unknown): string => {
+  if (typeof value === 'string') return value;
+  if (Array.isArray(value)) {
+    const firstInsight = value[0];
+    if (firstInsight && typeof firstInsight === 'object') {
+      const insight = firstInsight as { title?: unknown; desc?: unknown };
+      return [insight.title, insight.desc].filter((part) => typeof part === 'string').join(' ');
+    }
+  }
+  if (value && typeof value === 'object') {
+    const response = value as { message?: unknown; text?: unknown; title?: unknown; desc?: unknown };
+    if (typeof response.message === 'string') return response.message;
+    if (typeof response.text === 'string') return response.text;
+    return [response.title, response.desc].filter((part) => typeof part === 'string').join(' ');
+  }
+  return '';
+};
+
 export default function NeighborhoodInsights({ lat, lng }: InsightsProps) {
   const [pois, setPois] = useState<POI[]>([]);
   const [loading, setLoading] = useState(true);
@@ -75,15 +95,13 @@ export default function NeighborhoodInsights({ lat, lng }: InsightsProps) {
   const generateAISummary = async (foundPois: POI[]) => {
     setLoadingAi(true);
     try {
-      // In a real app, this would call your backend which then calls Gemini.
-      // Assuming a generic AI endpoint is available.
-      const res = await api.post('/ai/insights', {
-        prompt: `Describe this neighborhood based on these nearby amenities: ${foundPois.map(p => p.name).join(', ')}. Write 3 engaging sentences for a luxury property listing.`
+      const res = await api.post('/ai/chat', {
+        message: `Describe this neighborhood based on these nearby amenities: ${foundPois.map(p => p.name).join(', ')}. Write 3 engaging sentences for a luxury property listing.`
       });
-      setAiSummary(res.data.data);
+      setAiSummary(toSummaryText(res.data.data) || fallbackNeighborhoodSummary);
     } catch (err) {
       console.warn('AI summary generation failed, falling back to static text.');
-      setAiSummary('This vibrant neighborhood offers excellent connectivity and convenience. With top-rated schools, reliable healthcare, and popular dining spots just a short walk away, it provides the perfect balance of lifestyle and practicality. Everything you need for comfortable urban living is right at your doorstep.');
+      setAiSummary(fallbackNeighborhoodSummary);
     } finally {
       setLoadingAi(false);
     }

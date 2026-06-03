@@ -32,6 +32,26 @@ export const protect = async (req, res, next) => {
   }
 };
 
+// Optional Auth (doesn't fail if no token)
+export const optionalAuth = async (req, res, next) => {
+  let token;
+  if (req.cookies.token) {
+    token = req.cookies.token;
+  } else if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+  
+  if (!token || token === 'none') return next();
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = await User.findById(decoded.id);
+  } catch (error) {
+    // ignore
+  }
+  next();
+};
+
 // Grant access to specific roles
 export const authorize = (...roles) => {
   return (req, res, next) => {

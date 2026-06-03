@@ -7,13 +7,14 @@ const router = express.Router();
 
 const upload = multer({ storage: multer.memoryStorage() });
 
+router.post('/chat', aiChat);
+
 router.use(protect);
 
 router.post('/insights', generateInsights);
 router.post('/generate-description', authorize('admin', 'landlord'), generateDescription);
 router.post('/valuate', authorize('admin', 'landlord', 'investor'), valuateProperty);
 router.post('/analyze-lease', upload.single('contractFile'), analyzeLeaseContract);
-router.post('/chat', aiChat);
 router.post('/screen-tenant', authorize('admin', 'landlord'), screenTenant);
 
 export default router;

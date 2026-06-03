@@ -13,7 +13,7 @@ import {
   getPropertyPassport,
   submitInspection
 } from '../controllers/propertyController.js';
-import { protect, authorize } from '../middleware/auth.js';
+import { protect, authorize, optionalAuth } from '../middleware/auth.js';
 import { cacheRoute } from '../middleware/cacheMiddleware.js';
 
 const router = express.Router();
@@ -23,7 +23,7 @@ router.get('/portfolio/stats', protect, authorize('user', 'landlord', 'admin'), 
 router.get('/stats', protect, cacheRoute(600), getPropertyStats);
 
 // Public routes
-router.get('/', cacheRoute(300), getAllProperties);
+router.get('/', optionalAuth, cacheRoute(300), getAllProperties);
 
 // Protected root routes
 router.post('/', protect, authorize('user', 'landlord', 'admin'), createProperty);

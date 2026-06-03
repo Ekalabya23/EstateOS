@@ -6,7 +6,7 @@ interface User {
   _id?: string;
   name: string;
   email: string;
-  role: 'user' | 'tenant' | 'landlord' | 'admin' | 'investor';
+  role: 'user' | 'tenant' | 'landlord' | 'admin';
   profileImage: string;
   onboardingCompleted?: boolean;
   profileCompletion?: number;

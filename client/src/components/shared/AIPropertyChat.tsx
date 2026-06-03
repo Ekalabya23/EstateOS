@@ -15,6 +15,28 @@ interface AIPropertyChatProps {
   propertyName: string;
 }
 
+const toMessageText = (value: unknown): string => {
+  if (typeof value === 'string') return value;
+  if (value == null) return '';
+
+  if (typeof value === 'object') {
+    const maybeInsight = value as { title?: unknown; desc?: unknown; message?: unknown; text?: unknown };
+    if (typeof maybeInsight.message === 'string') return maybeInsight.message;
+    if (typeof maybeInsight.text === 'string') return maybeInsight.text;
+    if (typeof maybeInsight.title === 'string' || typeof maybeInsight.desc === 'string') {
+      return [maybeInsight.title, maybeInsight.desc].filter(Boolean).join('\n\n');
+    }
+
+    try {
+      return JSON.stringify(value, null, 2);
+    } catch {
+      return 'I received a response, but could not display it.';
+    }
+  }
+
+  return String(value);
+};
+
 const SUGGESTED_QUESTIONS = [
   "What's the rental yield?",
   "Is this a good investment?",
@@ -66,12 +88,12 @@ export default function AIPropertyChat({ propertyId, propertyName }: AIPropertyC
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: response.data.data
+        content: toMessageText(response.data.data)
       };
 
       setMessages(prev => [...prev, assistantMessage]);
     } catch (error: any) {
-      toast.error('Failed to get AI response. Please try again.');
+      toast.error(error.response?.data?.message || 'Failed to get AI response. Please try again.');
     } finally {
       setIsTyping(false);
     }

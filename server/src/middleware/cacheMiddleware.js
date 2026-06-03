@@ -14,7 +14,7 @@ export const cacheRoute = (duration) => (req, res, next) => {
     return next();
   }
 
-  const key = req.originalUrl;
+  const key = `${req.user?._id || 'public'}_${req.originalUrl}`;
   const cachedResponse = cache.get(key);
 
   if (cachedResponse) {
@@ -24,7 +24,9 @@ export const cacheRoute = (duration) => (req, res, next) => {
   // Intercept res.json to store the response body before sending it
   res.originalJson = res.json;
   res.json = function(body) {
-    cache.set(key, body, duration);
+    if (res.statusCode >= 200 && res.statusCode < 300) {
+      cache.set(key, body, duration);
+    }
     return res.originalJson.call(this, body);
   };
 

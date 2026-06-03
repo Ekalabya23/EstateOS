@@ -169,8 +169,13 @@ export const rateTenant = async (req, res) => {
 // @access  Private (Tenant)
 export const getMyPayments = async (req, res) => {
   try {
+    const tenant = await Tenant.findOne({ user: req.user._id, status: 'active' });
+    if (!tenant) {
+      return res.status(404).json({ success: false, message: 'Active lease not found' });
+    }
+
     const transactions = await Transaction.find({ 
-      user: req.user._id,
+      tenant: tenant._id,
       category: 'rent'
     }).sort('-date');
     

@@ -3,8 +3,9 @@ import Property from '../models/Property.js';
 import Transaction from '../models/Transaction.js';
 import { getIO } from '../socket.js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { env } from '../config/env.js';
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const genAI = env.GEMINI_API_KEY ? new GoogleGenerativeAI(env.GEMINI_API_KEY) : null;
 
 // @desc    Create a new maintenance ticket
 // @route   POST /api/v1/maintenance
@@ -23,7 +24,10 @@ export const createTicket = async (req, res) => {
     let estimatedCost = 0;
     let aiCategory = category || 'General';
     try {
-      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      if (!genAI) {
+        throw new Error('GEMINI_API_KEY is not configured');
+      }
+      const model = genAI.getGenerativeModel({ model: env.GEMINI_MODEL });
       const prompt = `Analyze this maintenance request: Title: "${title}", Description: "${description}". 
       Respond with ONLY a JSON object containing two fields: 
       1. "category" (one of: Plumbing, Electrical, HVAC, Structural, Appliance, General)
@@ -44,7 +48,6 @@ export const createTicket = async (req, res) => {
 
     const ticket = await MaintenanceTicket.create({
       title,
-      description,
       property,
       tenant: req.user._id,
       landlord: propertyData.owner,

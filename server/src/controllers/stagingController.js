@@ -1,10 +1,12 @@
 import Replicate from 'replicate';
 import AppError from '../utils/AppError.js';
-import Property from '../models/Property.js';
+import { env } from '../config/env.js';
 
-const replicate = new Replicate({
-  auth: process.env.REPLICATE_API_TOKEN,
-});
+const replicate = env.REPLICATE_API_TOKEN
+  ? new Replicate({
+      auth: env.REPLICATE_API_TOKEN,
+    })
+  : null;
 
 // @desc    Generate AI Virtual Staging for an empty room
 // @route   POST /api/v1/staging/generate
@@ -15,6 +17,10 @@ export const generateVirtualStaging = async (req, res, next) => {
 
     if (!imageUrl) {
       return next(new AppError('Please provide an image URL to stage', 400));
+    }
+
+    if (!replicate) {
+      return next(new AppError('Replicate is not configured. Please set REPLICATE_API_TOKEN.', 503));
     }
 
     // We'll use a ControlNet model on Replicate which is excellent for architecture

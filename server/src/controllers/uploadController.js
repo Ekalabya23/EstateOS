@@ -42,6 +42,11 @@ export const upload = multer({
   },
 });
 
+export const pickUploadedFile = (req, res, next) => {
+  req.file = req.files?.file?.[0] || req.files?.image?.[0] || req.files?.photo?.[0] || req.files?.document?.[0];
+  next();
+};
+
 // @desc    Upload file
 // @route   POST /api/v1/upload
 // @access  Private
@@ -57,7 +62,7 @@ export const uploadFile = async (req, res, next) => {
     let variants = {};
 
     if (isImage) {
-      const filename = `${req.file.fieldname}-${timestamp}.webp`;
+      const filename = `image-${timestamp}.webp`;
       const originalPath = path.join(uploadDir, filename);
       const mediumPath = path.join(uploadDir, `medium-${filename}`);
       const thumbPath = path.join(uploadDir, `thumb-${filename}`);
@@ -88,7 +93,7 @@ export const uploadFile = async (req, res, next) => {
       };
     } else {
       // It's a document
-      const filename = `${req.file.fieldname}-${timestamp}${path.extname(req.file.originalname)}`;
+      const filename = `file-${timestamp}${path.extname(req.file.originalname)}`;
       const docPath = path.join(uploadDir, filename);
       fs.writeFileSync(docPath, req.file.buffer);
       finalPath = `/uploads/${filename}`;

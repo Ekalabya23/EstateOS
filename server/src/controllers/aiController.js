@@ -1,10 +1,67 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import Property from '../models/Property.js';
 import AppError from '../utils/AppError.js';
+import { env } from '../config/env.js';
 
 // Setup Gemini
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'MISSING_KEY');
-const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+const genAI = env.GEMINI_API_KEY ? new GoogleGenerativeAI(env.GEMINI_API_KEY) : null;
+const getGeminiModel = () => {
+  if (!genAI) {
+    throw new AppError('Gemini is not configured. Please set GEMINI_API_KEY.', 503);
+  }
+  return genAI.getGenerativeModel({ model: env.GEMINI_MODEL });
+};
+
+const buildFallbackInsights = (properties = [], transactions = {}) => {
+  const propertyCount = Array.isArray(properties) ? properties.length : 0;
+  const occupiedCount = Array.isArray(properties)
+    ? properties.filter((property) => property.status === 'occupied' || property.currentTenant).length
+    : 0;
+  const occupancyRate = propertyCount > 0 ? Math.round((occupiedCount / propertyCount) * 100) : 0;
+  const totalIncome = transactions.totalIncome || transactions.income || 0;
+  const totalExpense = transactions.totalExpense || transactions.expense || 0;
+  const netIncome = totalIncome - totalExpense;
+
+  return [
+    {
+      id: 'fallback-1',
+      type: occupancyRate >= 80 ? 'success' : 'warning',
+      icon: occupancyRate >= 80 ? 'TrendingUp' : 'AlertCircle',
+      title: 'Occupancy Snapshot',
+      desc: propertyCount
+        ? `${occupancyRate}% of tracked properties appear occupied. Review vacant listings, pricing, and lead response time to improve portfolio yield.`
+        : 'Add properties to your portfolio to unlock occupancy tracking and leasing recommendations.'
+    },
+    {
+      id: 'fallback-2',
+      type: netIncome >= 0 ? 'success' : 'warning',
+      icon: netIncome >= 0 ? 'TrendingUp' : 'AlertCircle',
+      title: 'Net Cash Flow',
+      desc: `Current recorded net cash flow is ₹${netIncome.toLocaleString('en-IN')}. Keep rent, maintenance, and one-off expenses updated for sharper analysis.`
+    },
+    {
+      id: 'fallback-3',
+      type: 'info',
+      icon: 'Lightbulb',
+      title: 'Revenue Opportunity',
+      desc: 'Compare rent against similar nearby properties and update amenities, photos, and descriptions for assets with weaker demand.'
+    },
+    {
+      id: 'fallback-4',
+      type: 'neutral',
+      icon: 'UserCheck',
+      title: 'Tenant Health',
+      desc: 'Track lease expiry dates, rent payment history, and maintenance response times to identify tenant retention risks early.'
+    },
+    {
+      id: 'fallback-5',
+      type: 'info',
+      icon: 'Sparkles',
+      title: 'AI Temporarily Limited',
+      desc: 'Live Gemini analysis is cooling down because the current API quota was reached, so EstateOS is showing rule-based insights for now.'
+    }
+  ];
+};
 
 // Feature 1: Generate Property Description
 export const generateDescription = async (req, res, next) => {
@@ -23,7 +80,7 @@ export const generateDescription = async (req, res, next) => {
     Style: Sophisticated, aspirational, factual. No clichés.
     Format: Single flowing paragraph. No bullet points.`;
     
-    const result = await model.generateContent(prompt);
+    const result = await getGeminiModel().generateContent(prompt);
     const description = result.response.text();
     
     res.json({ success: true, data: description });
@@ -59,14 +116,21 @@ export const generateInsights = async (req, res, next) => {
     maintenance risks, market positioning, portfolio diversification.
     Return ONLY the JSON array, nothing else.`;
     
-    const result = await model.generateContent(prompt);
+    const result = await getGeminiModel().generateContent(prompt);
     let text = result.response.text();
     text = text.replace(/\`\`\`json/g, '').replace(/\`\`\`/g, '').trim();
     const insights = JSON.parse(text);
     
     res.json({ success: true, data: insights });
   } catch (error) {
-    next(new AppError('Failed to generate insights: ' + error.message, 500));
+    console.warn('Gemini insights failed, using fallback insights:', error.message);
+    const { properties, transactions } = req.body;
+    res.json({
+      success: true,
+      data: buildFallbackInsights(properties, transactions),
+      fallback: true,
+      message: 'Live AI insights are temporarily unavailable, so fallback insights were generated.'
+    });
   }
 };
 
@@ -112,7 +176,7 @@ export const analyzeLeaseContract = async (req, res, next) => {
       "recommendation": "sign|negotiate|reject with reason"
     }`;
     
-    const result = await model.generateContent(prompt);
+    const result = await getGeminiModel().generateContent(prompt);
     let text = result.response.text();
     text = text.replace(/\`\`\`json/g, '').replace(/\`\`\`/g, '').trim();
     const analysis = JSON.parse(text);
@@ -151,7 +215,7 @@ export const valuateProperty = async (req, res, next) => {
       "recommendation": "buy|hold|sell with brief reason"
     }`;
     
-    const result = await model.generateContent(prompt);
+    const result = await getGeminiModel().generateContent(prompt);
     let text = result.response.text();
     text = text.replace(/\`\`\`json/g, '').replace(/\`\`\`/g, '').trim();
     const valuation = JSON.parse(text);
@@ -194,7 +258,7 @@ export const aiChat = async (req, res, next) => {
     If asked about specific property details not provided, say you don't have that info.
     Keep response under 150 words.`;
     
-    const result = await model.generateContent(prompt);
+    const result = await getGeminiModel().generateContent(prompt);
     const reply = result.response.text();
     
     res.json({ success: true, data: reply });
@@ -228,7 +292,7 @@ export const screenTenant = async (req, res, next) => {
       "summary": "2 sentence summary for landlord"
     }`;
     
-    const result = await model.generateContent(prompt);
+    const result = await getGeminiModel().generateContent(prompt);
     let text = result.response.text();
     text = text.replace(/\`\`\`json/g, '').replace(/\`\`\`/g, '').trim();
     const screening = JSON.parse(text);

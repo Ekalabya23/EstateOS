@@ -62,7 +62,8 @@ const seedData = async () => {
         name: 'Admin User',
         email: 'admin@estateos.com',
         password: 'password123',
-        role: 'admin'
+        role: 'admin',
+        onboardingCompleted: true
       });
       console.log('Created Admin User');
     }
@@ -80,7 +81,8 @@ const seedData = async () => {
           name: `Tenant ${i}`,
           email: `tenant${i}@mumbai.com`,
           password: 'password123',
-          role: 'tenant'
+          role: 'tenant',
+          onboardingCompleted: true
         });
       }
       tenants.push(tenant);
@@ -92,7 +94,8 @@ const seedData = async () => {
           name: `Investor ${i}`,
           email: `investor${i}@mumbai.com`,
           password: 'password123',
-          role: 'user' // schema expects 'user', frontend treats 'user' as investor
+          role: 'user', // schema expects 'user', frontend treats 'user' as investor
+          onboardingCompleted: true
         });
       }
       investors.push(investor);

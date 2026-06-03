@@ -70,7 +70,8 @@ const seedEnterprise = async () => {
         email: `manager${i}@estateos.com`,
         password,
         role: 'admin',
-        reputationScore: 100
+        reputationScore: 100,
+        onboardingCompleted: true
       });
     }
 
@@ -81,7 +82,8 @@ const seedEnterprise = async () => {
         email: `investor${i}@estateos.com`,
         password,
         role: 'user', // "user" acts as Investor in our system, "landlord" also works
-        reputationScore: randomInt(85, 99)
+        reputationScore: randomInt(85, 99),
+        onboardingCompleted: true
       });
     }
 
@@ -92,7 +94,8 @@ const seedEnterprise = async () => {
         email: `tenant${i}@estateos.com`,
         password,
         role: 'tenant',
-        reputationScore: randomInt(70, 99)
+        reputationScore: randomInt(70, 99),
+        onboardingCompleted: true
       });
     }
 
